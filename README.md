@@ -1,2 +1,2 @@
 # collection
-tools for data collection
+Tools for data collection
