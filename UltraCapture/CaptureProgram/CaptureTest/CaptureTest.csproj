@@ -25,6 +25,8 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>0.0</OldToolsVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <TargetFrameworkProfile />
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -37,10 +39,8 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>bin\Debug\</OutputPath>
@@ -60,7 +60,7 @@
     <DebugType>full</DebugType>
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>false</Prefer32Bit>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release\</OutputPath>
@@ -90,18 +90,37 @@
   <PropertyGroup />
   <PropertyGroup />
   <ItemGroup>
-    <ProjectReference Include="..\DirectX.Capture\DirectX.Capture.csproj">
-      <Name>DirectX.Capture</Name>
-      <Project>{8C0015DB-69E1-46E7-8705-3A4F8BE2E5E7}</Project>
-      <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
+    <ProjectReference Include="..\DShowNET\DShowNET.csproj">
+      <Project>{ce009bfa-5ef6-4153-b2a1-2fa79698a9ae}</Project>
+      <Name>DShowNET</Name>
     </ProjectReference>
-    <Reference Include="Microsoft.Kinect, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+    <ProjectReference Include="..\HDFaceBasics-WPF\HDFaceBasics-WPF.csproj">
+      <Project>{fb688458-62d0-4289-99b7-5bacc877395d}</Project>
+      <Name>HDFaceBasics-WPF</Name>
+    </ProjectReference>
+    <Reference Include="DirectX.Capture, Version=1.0.5493.21572, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\..\Program Files\Microsoft SDKs\Kinect\v2.0_1409\Assemblies\Microsoft.Kinect.dll</HintPath>
+      <HintPath>..\DirectX.Capture\obj\Debug\DirectX.Capture.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Kinect.Face, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=x86">
+    <Reference Include="IronPython, Version=2.7.5.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\..\Program Files\Microsoft SDKs\Kinect\v2.0_1409\Redist\Face\x86\Microsoft.Kinect.Face.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\..\Program Files (x86)\IronPython 2.7\Platforms\Net45\IronPython.dll</HintPath>
+    </Reference>
+    <Reference Include="IronPython.Modules, Version=2.7.5.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\Program Files (x86)\IronPython 2.7\Platforms\Net45\IronPython.Modules.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Dynamic, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\Program Files (x86)\IronPython 2.7\Platforms\Net45\Microsoft.Dynamic.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Scripting, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\Program Files (x86)\IronPython 2.7\Platforms\Net45\Microsoft.Scripting.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Scripting.Metadata, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\..\..\Program Files (x86)\IronPython 2.7\Platforms\Net45\Microsoft.Scripting.Metadata.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -115,6 +134,7 @@
     <Reference Include="System.Drawing">
       <Name>System.Drawing</Name>
     </Reference>
+    <Reference Include="System.Windows" />
     <Reference Include="System.Windows.Forms">
       <Name>System.Windows.Forms</Name>
     </Reference>
@@ -127,6 +147,7 @@
   <ItemGroup>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
     </Compile>
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -134,44 +155,24 @@
     <Compile Include="CaptureTest.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Class1.cs" />
     <Compile Include="ExperimentInfo.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ExperimentInfo.Designer.cs">
       <DependentUpon>ExperimentInfo.cs</DependentUpon>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs" />
-    <Compile Include="obj\x64\Debug\MainWindow.g.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="obj\x64\Debug\TemporaryGeneratedFile_036C0B5B-1481-4323-8D20-8F5ADCB23D92.cs" />
-    <Compile Include="obj\x64\Debug\TemporaryGeneratedFile_5937a670-0e60-4077-877b-f7221da3dda1.cs" />
-    <Compile Include="obj\x64\Debug\TemporaryGeneratedFile_E7A71F73-0F8D-4B9B-B56E-8E70B10BC5D3.cs" />
     <Compile Include="ScreenCapture.cs" />
     <Content Include="App.ico" />
-    <Content Include="obj\x64\Debug\HDFaceBasics-WPF.csproj.FileListAbsolute.txt" />
-    <Content Include="obj\x64\Debug\HDFaceBasics-WPF.exe" />
-    <Content Include="obj\x64\Debug\HDFaceBasics-WPF.pdb" />
     <EmbeddedResource Include="CaptureTest.resx">
       <DependentUpon>CaptureTest.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ExperimentInfo.resx">
       <DependentUpon>ExperimentInfo.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="obj\x64\Debug\HDFaceBasics-WPF.g.resources" />
-    <EmbeddedResource Include="obj\x64\Debug\Microsoft.Samples.Kinect.HDFaceBasics.Properties.Resources.resources" />
+    <EmbeddedResource Include="Properties\Resources.resx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="obj\x64\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
-    <None Include="obj\x64\Debug\HDFaceBasics-WPF.csproj.GenerateResource.Cache" />
-    <None Include="obj\x64\Debug\HDFaceBasics-WPF.csprojResolveAssemblyReference.cache" />
-    <None Include="obj\x64\Debug\HDFaceBasics-WPF_MarkupCompile.cache" />
-    <None Include="obj\x64\Debug\HDFaceBasics-WPF_MarkupCompile.i.cache" />
-    <None Include="obj\x64\Debug\HDFaceBasics-WPF_MarkupCompile.i.lref" />
-    <None Include="obj\x64\Debug\HDFaceBasics-WPF_MarkupCompile.lref" />
-    <None Include="obj\x64\Debug\MainWindow.baml" />
     <None Include="Properties\app.manifest">
       <SubType>Designer</SubType>
     </None>
@@ -199,13 +200,13 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="obj\x64\Debug\TempPE\" />
+    <Page Include="App.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

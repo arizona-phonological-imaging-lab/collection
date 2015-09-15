@@ -19,11 +19,13 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
+        int i = 0;
+        System.Collections.Generic.Queue<Tuple<double, double, double, string, string, string, string>> q = new System.Collections.Generic.Queue<Tuple<double, double, double, string, string, string, string>>();
         /// <summary>
         /// Currently used KinectSensor
         /// </summary>
         private KinectSensor sensor = null;
-
+        
         /// <summary>
         /// Body frame source to get a BodyFrameReader
         /// </summary>
@@ -36,9 +38,12 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
 
         public string coordinates;
 
+        //Establishes the tuple to hold the reference coordinates
+        public Tuple<double, double, double, string, string, string, string> refCoords;
+
         private DateTime date1 = new DateTime(0);
 
-        private Quaternion quat;
+        //private Quaternion quat;
 
         /// <summary>
         /// HighDefinitionFaceFrameSource to get a reader and a builder from.
@@ -84,7 +89,9 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// <summary>
         /// Gets or sets the current status text to display
         /// </summary>
-        private string statusText = "Ready To Start Capture";
+        public string statusText = "Ready To Start Capture";
+
+        //var converter = new System.Windows.Media.BrushConverter();
 
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
@@ -124,7 +131,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets or sets the current tracked user id
         /// </summary>
@@ -240,29 +247,65 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// </summary>
         /// <param name="status">Status value</param>
         /// <returns>Status value as text</returns>
-        private static string GetCollectionStatusText(FaceModelBuilderCollectionStatus status)
+        private string GetCollectionStatusText(FaceModelBuilderCollectionStatus status)
         {
             string res = string.Empty;
 
             if ((status & FaceModelBuilderCollectionStatus.FrontViewFramesNeeded) != 0)
             {
+                this.forwardNeeded.Opacity = 100;
+                this.forwardNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");//red
                 res = "FrontViewFramesNeeded";
                 return res;
+            }
+            else
+            {
+                this.forwardNeeded.Opacity = 50;
+                this.forwardNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
             }
 
             if ((status & FaceModelBuilderCollectionStatus.LeftViewsNeeded) != 0)
             {
+                this.leftNeeded.Opacity = 100;
+                this.leftNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");//red
                 res = "LeftViewsNeeded";
                 return res;
+            }
+            else
+            {
+                this.leftNeeded.Opacity = 50;
+                this.leftNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
             }
 
             if ((status & FaceModelBuilderCollectionStatus.RightViewsNeeded) != 0)
             {
+                
+                this.rightNeeded.Opacity = 100;
+                this.rightNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");//red
                 res = "RightViewsNeeded";
                 return res;
             }
+            else
+            {
+                this.rightNeeded.Opacity = 50;
+                this.rightNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
+            }
 
             if ((status & FaceModelBuilderCollectionStatus.TiltedUpViewsNeeded) != 0)
+            {
+                
+                this.upNeeded.Opacity = 100;
+                this.upNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");//red
+                res = "TiltedUpViewsNeeded";
+                return res;
+            }
+            else
+            {
+                this.upNeeded.Opacity = 50;
+                this.upNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
+            }
+
+            if ((status & FaceModelBuilderCollectionStatus.MoreFramesNeeded) != 0)
             {
                 res = "TiltedUpViewsNeeded";
                 return res;
@@ -270,13 +313,12 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
 
             if ((status & FaceModelBuilderCollectionStatus.Complete) != 0)
             {
+                this.forwardNeeded.Opacity = 0;
+                this.leftNeeded.Opacity = 0;
+                this.rightNeeded.Opacity = 0;
+                this.upNeeded.Opacity = 0;
+                this.captured.Opacity = 100;
                 res = "Complete";
-                return res;
-            }
-
-            if ((status & FaceModelBuilderCollectionStatus.MoreFramesNeeded) != 0)
-            {
-                res = "TiltedUpViewsNeeded";
                 return res;
             }
 
@@ -353,18 +395,25 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
                 indices.Add((int)index02);
                 indices.Add((int)index01);
             }
-            //theGeometry is what can turn on/off the 3D face - though it might make the Kinect not as accurate.  As in not at all accurate, from what I can tell.
-            this.theGeometry.TriangleIndices = indices;
-            this.theGeometry.Normals = null;
-            this.theGeometry.Positions = new Point3DCollection();
-            this.theGeometry.TextureCoordinates = new PointCollection();
 
-            foreach (var vert in vertices)
-            {
-            //theGeometry is what can turn on/off the 3D face - though it might make the Kinect not as accurate.  As in not at all accurate, from what I can tell.
-                this.theGeometry.Positions.Add(new Point3D(vert.X, vert.Y, -vert.Z));
-                this.theGeometry.TextureCoordinates.Add(new Point());
-            }
+            //====================================================================================
+            // SJohnston, RCoto 20150217
+            // Commented out all the lines that refer to the object theGeometry. This is to keep
+            // the program from drawing the face onto the screen, thereby reducing processor
+            // load by 10-12%.
+            // We added comments to the lines below AND to line 389 in function UpdateMesh()!
+            //=====================================================================================
+
+            //this.theGeometry.TriangleIndices = indices;
+            //this.theGeometry.Normals = null;
+            //this.theGeometry.Positions = new Point3DCollection();
+            //this.theGeometry.TextureCoordinates = new PointCollection();
+
+            //foreach (var vert in vertices)
+            //{
+            //    this.theGeometry.Positions.Add(new Point3D(vert.X, vert.Y, -vert.Z));
+            //    this.theGeometry.TextureCoordinates.Add(new Point());
+            //}
 
         }
 
@@ -379,106 +428,154 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             for (int i = 0; i < vertices.Count; i++)
             {
                 var vert = vertices[i];
-                //theGeometry is what can turn on/off the 3D face - though it might make the Kinect not as accurate.  As in not at all accurate, from what I can tell.
-                this.theGeometry.Positions[i] = new Point3D(vert.X, vert.Y, -vert.Z);
+                //this.theGeometry.Positions[i] = new Point3D(vert.X, vert.Y, -vert.Z);
             }
 
-            //Console.WriteLine("Here it is: " + );
-            //Console.WriteLine("ANGLE: " + Vector4Face);
-
-            //Console.WriteLine("AXIS: " + Quaternion.Identity.Axis.ToString());
-
-            //Console.WriteLine("W, X, Y, Z : " + Quaternion.Identity.W.ToString() + "," +
-            //                                    Quaternion.Identity.X.ToString() + "," +
-            //                                    Quaternion.Identity.Y.ToString() + "," +
-            //                                    Quaternion.Identity.Z.ToString());
-
-            //Console.WriteLine("ANGLE = " + this.quat.Angle);
-            //Console.WriteLine("ISIDENTITY = " + this.quat.IsIdentity);
-            //Console.WriteLine("AXIS = " + this.quat.Axis);
-            //Console.WriteLine("Orientation (deg): (pitch:" + (this.currentFaceAlignment.FaceOrientation.X * 180).ToString() + ", yaw:" +
-            //                                     (this.currentFaceAlignment.FaceOrientation.Y* 180).ToString() + ", roll:" +
-            //                                     (this.currentFaceAlignment.FaceOrientation.Z*180).ToString() + ", " +
-            //                                     (this.currentFaceAlignment.FaceOrientation.W*180).ToString() + ")");
-            //Console.WriteLine("Pivot (cm): (X:" + (this.currentFaceAlignment.HeadPivotPoint.X*100).ToString() + ", Y:" +
-                                                 //(this.currentFaceAlignment.HeadPivotPoint.Y*100).ToString() + "Z:, " +
-                                                 //(this.currentFaceAlignment.HeadPivotPoint.Z*100).ToString() + ")");
 
 
+            //double w = this.currentFaceAlignment.FaceOrientation.W;
+            //double x = this.currentFaceAlignment.FaceOrientation.X;
+            //double y = this.currentFaceAlignment.FaceOrientation.Y;
+            //double z = this.currentFaceAlignment.FaceOrientation.Z;
+
+            //double w2 = Math.Pow(w, 2);
+            //double x2 = Math.Pow(x, 2);
+            //double y2 = Math.Pow(y, 2);
+            //double z2 = Math.Pow(z, 2);
+
+            ////CHRobot (rolando cited)
+            ////double roll = Math.Atan2(2*(w*x + y*z), (w2-x2-y2+z2));
+            ////double pitch = -1 * (Math.Asin(2*(x*z - w*y)));
+            ////double yaw = Math.Atan2(2*(w*z + x*y), (w2+x2-y2-z2));
+
+            ////euclideanspace.com quat to euler
+            //double yaw = Math.Atan2(2 * (y * w) - 2 * (x * z), 1 - (2 * (y2)) - (2 * (z2)));
+            //double roll = Math.Asin(2 * (x * y) + 2 * (z * w));
+            //double pitch = Math.Atan2(2 * (x * w) - 2 * (y * z), 1 - (2 * (x2)) - (2 * (z2)));
+
+            //yaw = Math.Round((yaw * (180 / Math.PI)) * -1, 1);
+            //pitch = Math.Round(pitch * (180 / Math.PI), 1);
+            //roll = Math.Round((roll * (180 / Math.PI)) * -1, 1);
+
+            //Attempt to back-calculate the "angle" variable which 'looks' like it could be used to calc p/y/r
+            //double angle = Math.Acos(w) * 2;
+            //double n_x = x / Math.Sin(0.5 * angle);
+            //double n_z = z / Math.Sin(0.5 * angle);
+            //double n_y = y / Math.Sin(0.5 * angle);
+
+            //var coords = this.GetCoords();
+
+            //double pitch = coords.Item1;
+            //double yaw = coords.Item2;
+            //double roll = coords.Item3;
+
+            //date1 = DateTime.Now;
+
+            //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Rotation:    (Pitch: " + pitch.ToString();
+            //coordinates += "°, Yaw: " + yaw.ToString();
+            //coordinates += "°, Roll: " + roll.ToString();
+            //coordinates += ")\r\n";
+            //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Translation: (Zero point in X-Axis: " + this.currentFaceAlignment.HeadPivotPoint.X.ToString() + " mm, Zero-point in Y-Axis: " + this.currentFaceAlignment.HeadPivotPoint.Y.ToString() + " mm, Distance from Kinect: " + this.currentFaceAlignment.HeadPivotPoint.Z.ToString() + " mm)" + "\r\n";
+
+            
+            //check to see if the reference coordinates have been obtained yet
+            if (this.refCoordButton.IsEnabled == false)
+            {
+                //Obtain Coordinates
+                var coords = this.GetCoords();
+
+                double pitch = coords.Item1;
+                double yaw = coords.Item2;
+                double roll = coords.Item3;
+
+                //date1 = DateTime.Now;
+
+                //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Rotation:    (Pitch: " + pitch.ToString();
+                //coordinates += "°, Yaw: " + yaw.ToString();
+                //coordinates += "°, Roll: " + roll.ToString();
+                //coordinates += ")\r\n";
+                //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Translation: (Zero point in X-Axis: " + this.currentFaceAlignment.HeadPivotPoint.X.ToString() + " mm, Zero-point in Y-Axis: " + this.currentFaceAlignment.HeadPivotPoint.Y.ToString() + " mm, Distance from Kinect: " + this.currentFaceAlignment.HeadPivotPoint.Z.ToString() + " mm)" + "\r\n";
+
+                //i += 1;
+                q.Enqueue(coords);
+                //if (i == 2000){ 
+                //    //q.Dequeue();
+                //    string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                //    System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
+                //    coordinates = "";
+                //    i = 0;
+                //}
+                
+                //alert user if pitch is out of alignment
+                if ((pitch - refCoords.Item1) > 10 || (pitch - refCoords.Item1) < -10)
+                {
+                    this.pitchBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");
+                }
+                else
+                {
+                    this.pitchBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF0AA60A");
+                }
+
+                //alert user if yaw is out of alignment
+                if ((yaw - refCoords.Item2) > 10 || (yaw - refCoords.Item2) < -10)
+                {
+                    this.yawBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");
+                }
+                else
+                {
+                    this.yawBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF0AA60A");
+                }
+
+                //alert user if roll is out of alignment
+                if ((roll - refCoords.Item3) > 10 || (roll - refCoords.Item3) < -10)
+                {
+                    this.rollBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");
+                }
+                else
+                {
+                    this.rollBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF0AA60A");
+                }
+            }
+
+            if (this.CurrentTrackingId != 0)
+            {
+                this.trackLabel.Text = "TRACKING";
+                this.trackLabel.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF0AA60A");
+            }
+
+            //string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            //System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
+        }
+
+        /// <summary>
+        /// Get a set of Coordinate values
+        /// </summary>
+        private Tuple<double,double,double,string,string,string,string> GetCoords() 
+        {
             double w = this.currentFaceAlignment.FaceOrientation.W;
             double x = this.currentFaceAlignment.FaceOrientation.X;
             double y = this.currentFaceAlignment.FaceOrientation.Y;
             double z = this.currentFaceAlignment.FaceOrientation.Z;
+            string transX = this.currentFaceAlignment.HeadPivotPoint.X.ToString();
+            string transY = this.currentFaceAlignment.HeadPivotPoint.Y.ToString(); 
+            string transZ = this.currentFaceAlignment.HeadPivotPoint.Z.ToString();
+            
 
-            double w2 = Math.Pow(w,2);
-            double x2 = Math.Pow(x,2);
-            double y2 = Math.Pow(y,2);
-            double z2 = Math.Pow(z,2);
-
-            //CHRobot (rolando cited)
-            //double roll = Math.Atan2(2*(w*x + y*z), (w2-x2-y2+z2));
-            //double pitch = -1 * (Math.Asin(2*(x*z - w*y)));
-            //double yaw = Math.Atan2(2*(w*z + x*y), (w2+x2-y2-z2));
-
-            //Rolando Pitch
-            double rpitch = Math.Atan2(2 * (x * y + z * w), 1 - (2 * (y2 + z2)));
-
-            //Wikipedia convert quat to euler
-            //double roll = Math.Atan2(2 * ((w * x) + (y * z)), (1 - (2 * (x2 + y2))));
-            //double pitch = -1 * (Math.Asin(2 * ((w * y) - (x * z))));
-            //double yaw = Math.Atan2(2 * ((w * z) + (x * y)), (1 - (2 * (y2 + z2))));
+            double w2 = Math.Pow(w, 2);
+            double x2 = Math.Pow(x, 2);
+            double y2 = Math.Pow(y, 2);
+            double z2 = Math.Pow(z, 2);
 
             //euclideanspace.com quat to euler
             double yaw = Math.Atan2(2 * (y * w) - 2 * (x * z), 1 - (2 * (y2)) - (2 * (z2)));
             double roll = Math.Asin(2 * (x * y) + 2 * (z * w));
             double pitch = Math.Atan2(2 * (x * w) - 2 * (y * z), 1 - (2 * (x2)) - (2 * (z2)));
 
-            yaw = Math.Round((yaw * (180/Math.PI))*-1,1);
-            pitch = Math.Round(pitch * (180 / Math.PI),1);
-            roll = Math.Round((roll * (180 / Math.PI))*-1,1);
-
-            //Attempt to back-calculate the "angle" variable which 'looks' like it could be used to calc p/y/r
-            double angle = Math.Acos(w) * 2;
-            double n_x = x/Math.Sin(0.5*angle);
-            double n_z = z/Math.Sin(0.5*angle);
-            double n_y = y/Math.Sin(0.5*angle);
-
-            //from math.stackexchange site
-            //double roll = Math.Atan2(((y * z) + (w * x)), 0.5 - (x2 + y2));
-            //double pitch = Math.Asin(-2 * ((x * z)+(w * y)));
-            //double yaw = Math.Atan2((x * y)+(w * z), 0.5 - (y2 + z2));
-            
-
-            ////////Console.WriteLine("Pitch: " + pitch.ToString() + " Roll: "+roll.ToString()+" Yaw: "+yaw.ToString());
-
-            //Console.WriteLine(quat.ToString());
-
-            //date1 = DateTime.Now;
-
-            //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Rotation:    (Pitch: " + ((this.currentFaceAlignment.FaceOrientation.X)*180).ToString();
-            //coordinates += "°, Yaw: " + ((this.currentFaceAlignment.FaceOrientation.Y)*180).ToString(); 
-            //coordinates += "°, Roll: " + ((this.currentFaceAlignment.FaceOrientation.Z)*180).ToString();
-            //coordinates += ")\r\n";
-            //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Translation: (Zero point in X-Axis: " + this.currentFaceAlignment.HeadPivotPoint.X.ToString() + " mm, Zero-point in Y-Axis: " + this.currentFaceAlignment.HeadPivotPoint.Y.ToString() + " mm, Distance from Kinect: " + this.currentFaceAlignment.HeadPivotPoint.Z.ToString() + " mm)" + "\r\n";
-
-            coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Rotation:    (Pitch: " + pitch.ToString();
-            coordinates += "°, Yaw: " + yaw.ToString();
-            coordinates += "°, Roll: " + roll.ToString();
-            coordinates += ")\r\n";
-            coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Translation: (Zero point in X-Axis: " + this.currentFaceAlignment.HeadPivotPoint.X.ToString() + " mm, Zero-point in Y-Axis: " + this.currentFaceAlignment.HeadPivotPoint.Y.ToString() + " mm, Distance from Kinect: " + this.currentFaceAlignment.HeadPivotPoint.Z.ToString() + " mm)" + "\r\n";
-
-            //if (pitch > 10 || pitch < -10) {
-            //    this.txtHDFace.Text = "Bad!!!";
-            //}
-            //else
-            //{
-            //    this.txtHDFace.Text = "Good!";
-            //}
-
-            Console.WriteLine(coordinates.ToString());
-
-            string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
+            yaw = Math.Round((yaw * (180 / Math.PI)) * -1, 1);
+            pitch = Math.Round(pitch * (180 / Math.PI), 1);
+            roll = Math.Round((roll * (180 / Math.PI)) * -1, 1);
+            date1 = DateTime.Now;
+            return Tuple.Create(pitch, yaw, roll, transX, transY, transZ, date1.ToString("yyyyyyyyMMddHHmmssfff"));
         }
 
         /// <summary>
@@ -489,6 +586,28 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         private void StartCapture_Button_Click(object sender, RoutedEventArgs e)
         {
             this.StartCapture();
+        }
+
+        /// <summary>
+        /// Capture neutral coordinates
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
+        private void RefCoordCapture_Button_Click(object sender, RoutedEventArgs e)
+        {
+            this.RefCoordCapture();
+            this.refCoordButton.IsEnabled = false;
+        }
+
+        /// <summary>
+        /// Write the coordinates to a file
+        /// </summary>
+        /// <param name="sender">object sending the event</param>
+        /// <param name="e">event arguments</param>
+        private void WriteCoords_Button_Click(object sender, RoutedEventArgs e)
+        {
+            this.WriteCoords();
+            //this.refCoordButton.IsEnabled = false;
         }
 
         /// <summary>
@@ -545,7 +664,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
                 this.highDefinitionFaceFrameSource.TrackingId = this.CurrentTrackingId;
             }
         }
-        
+
         /// <summary>
         /// This event is fired when a tracking is lost for a body tracked by HDFace Tracker
         /// </summary>
@@ -569,6 +688,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             }
         }
 
+
         /// <summary>
         /// This event is fired when a new HDFace frame is ready for consumption
         /// </summary>
@@ -582,25 +702,43 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
                 // Also ignore this frame if face tracking failed.
                 if (frame == null || !frame.IsFaceTracked)
                 {
+                    this.trackLabel.Text = "NOT TRACKING";
+                    this.trackLabel.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707"); //Red
+
+                    //date1 = DateTime.Now;
+                    //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Rotation:    (Pitch: NaN";
+                    //coordinates += ", Yaw: NaN";
+                    //coordinates += ", Roll: NaN";
+                    //coordinates += ")\r\n";
+                    //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Translation: (Zero point in X-Axis: NaN, Zero-point in Y-Axis: NaN, Distance from Kinect: NaN)\r\n";
+                    //string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                    //System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
+
                     return;
                 }
-                date1 = DateTime.Now;
-
-                //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Rotation:    (Pitch: " + ((this.currentFaceAlignment.FaceOrientation.X + 1)*180).ToString();
-                //coordinates += "°, Yaw: " + ((this.currentFaceAlignment.FaceOrientation.Y + 1)*180).ToString();
-                //coordinates += "°, Roll: " + ((this.currentFaceAlignment.FaceOrientation.Z + 1) * 180).ToString() + ")";
-                //coordinates += "\r\n";
-                //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Translation: (Zero point in X-Axis: " + this.currentFaceAlignment.HeadPivotPoint.X.ToString() + " mm, Zero-point in Y-Axis: " + this.currentFaceAlignment.HeadPivotPoint.Y.ToString() + " mm, Distance from Kinect: " + this.currentFaceAlignment.HeadPivotPoint.Z.ToString() + " mm)" + "\r\n";
-
-                //string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                //System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
 
                 frame.GetAndRefreshFaceAlignmentResult(this.currentFaceAlignment);
 
-                //Console.WriteLine(frame.RelativeTime.ToString());
-
                 this.UpdateMesh();
             }
+        }
+
+        /// <summary>
+        /// Obtain neutral coordinates
+        /// </summary>
+        private void RefCoordCapture()
+        {
+            //date1 = DateTime.Now;
+            refCoords = GetCoords();
+
+            double pitch = refCoords.Item1;
+            double yaw = refCoords.Item2;
+            double roll = refCoords.Item3;
+
+            string ref_coords = pitch.ToString() + "\t" + yaw.ToString() + "\t" + roll.ToString();
+
+            string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            System.IO.File.WriteAllText(dtopfolder + @"\ref_coords.txt", ref_coords);
         }
 
         /// <summary>
@@ -617,6 +755,35 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             this.faceModelBuilder.BeginFaceDataCollection();
 
             this.faceModelBuilder.CollectionCompleted += this.HdFaceBuilder_CollectionCompleted;
+            this.forwardNeeded.Opacity = 25;
+            this.upNeeded.Opacity = 25;
+            this.leftNeeded.Opacity = 25;
+            this.rightNeeded.Opacity = 25;
+        }
+
+        /// <summary>
+        /// Write the coordinates collected to a file
+        /// </summary>
+        private void WriteCoords()
+        {
+            //System.Linq.Enumerable.Range(0,q.Count);
+            while (q.Count > 0){
+                var coords = q.Dequeue();
+                //double pitch = coords.Item1;
+                //double yaw = coords.Item2;
+                //double roll = coords.Item3;
+                //string transX = coords.Item4;
+                //string transY = coords.Item5;
+                //string transZ = coords.Item6;
+                //string date = coords.Item7;
+                coordinates += "Time: " + coords.Item7 + " Rotation:    (Pitch: " + coords.Item1.ToString() +
+                                "°, Yaw: " + coords.Item2.ToString() + "°, Roll: " + coords.Item3.ToString() + ")\r\n" +
+                                "Time: " + coords.Item7 + " Translation: (Zero point in X-Axis: " + coords.Item4 +
+                                " mm, Zero-point in Y-Axis: " + coords.Item5 + " mm, Distance from Kinect: " +
+                                coords.Item6 + " mm)" + "\r\n";
+            }
+            string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
         }
 
         /// <summary>
@@ -645,10 +812,15 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             this.faceModelBuilder.Dispose();
             this.faceModelBuilder = null;
 
-            string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
+            //string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            //System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
 
             //this.InternalDispose();
+            this.forwardNeeded.Opacity = 0;
+            this.leftNeeded.Opacity = 0;
+            this.rightNeeded.Opacity = 0;
+            this.upNeeded.Opacity = 0;
+            this.captured.Opacity = 100;
             GC.SuppressFinalize(this);
 
             this.CurrentBuilderStatus = "Capture Complete";
@@ -672,12 +844,8 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             var collectionStatus = this.faceModelBuilder.CollectionStatus;
 
             newStatus += ", " + GetCollectionStatusText(collectionStatus);
-            //if (newStatus == "FrontViewFramesNeeded")
-            //{
-            //    this.notify.UpdateFront();
-            //}
+
             this.CurrentBuilderStatus = newStatus;
-            Console.WriteLine(newStatus);
         }
     }
 }

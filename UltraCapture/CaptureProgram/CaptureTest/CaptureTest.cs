@@ -9,25 +9,29 @@
 // ------------------------------------------------------------------
 
 using System;
-using System.Windows;
+using System.Windows.Media;
 using System.Diagnostics;
 using System.Drawing;
 using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
+using System.IO;
 using DirectX.Capture;
 using Microsoft.VisualBasic;
 using ScreenShotDemo;
 using System.Drawing.Imaging;
-using Microsoft.Kinect;
-using Microsoft.Kinect.Face;
+using IronPython.Hosting;
+using IronPython;
+//using Microsoft.Kinect;
+//using Microsoft.Kinect.Face;
 using Microsoft.Samples.Kinect.HDFaceBasics;
-using System.Windows.Media;
-using System.Windows.Media.Media3D;
+//using System.Windows.Media;
+//using System.Windows.Media.Media3D;
 //using Microsoft.Samples.Kinect.HDFaceBasics;
 
 namespace CaptureTest
 {
+    
     public class CaptureTest : System.Windows.Forms.Form
     {
         // 2013-02-11 __ZSC__
@@ -36,86 +40,18 @@ namespace CaptureTest
         private string date_today = DateTime.Now.ToString("yyyy-MM-dd");
         private string launch_time = DateTime.Now.ToString("HH:mm:ss");
         private string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
+        private MainWindow kinect = new MainWindow();
+        public string coordinates;
+        
         private string subjectID;
-
+        
         private Capture capture = null;
         private Filters filters = new Filters();
-
-        /// Kinect namespaces
-        /// <summary>
-        /// Currently used KinectSensor
-        /// </summary>
-        private KinectSensor sensor = null;
-
-        /// <summary>
-        /// Body frame source to get a BodyFrameReader
-        /// </summary>
-        private BodyFrameSource bodySource = null;
-
-        /// <summary>
-        /// Body frame reader to get body frames
-        /// </summary>
-        private BodyFrameReader bodyReader = null;
-
-        public string coordinates;
-
-        private DateTime date1 = new DateTime(0);
-
-        //private Quaternion quat;
-
-        private System.Windows.Media.Media3D.MeshGeometry3D theGeometry;
-
-        /// <summary>
-        /// HighDefinitionFaceFrameSource to get a reader and a builder from.
-        /// Also to set the currently tracked user id to get High Definition Face Frames of
-        /// </summary>
-        private HighDefinitionFaceFrameSource highDefinitionFaceFrameSource = null;
-
-        /// <summary>
-        /// HighDefinitionFaceFrameReader to read HighDefinitionFaceFrame to get FaceAlignment
-        /// </summary>
-        private HighDefinitionFaceFrameReader highDefinitionFaceFrameReader = null;
-
-        /// <summary>
-        /// FaceAlignment is the result of tracking a face, it has face animations location and orientation
-        /// </summary>
-        private FaceAlignment currentFaceAlignment = null;
-
-        /// <summary>
-        /// FaceModel is a result of capturing a face
-        /// </summary>
-        private FaceModel currentFaceModel = null;
-
-        /// <summary>
-        /// FaceModelBuilder is used to produce a FaceModel
-        /// </summary>
-        private FaceModelBuilder faceModelBuilder = null;
-
-        /// <summary>
-        /// The currently tracked body
-        /// </summary>
-        private Body currentTrackedBody = null;
-
-        /// <summary>
-        /// The currently tracked body
-        /// </summary>
-        private ulong currentTrackingId = 0;
-
-        /// <summary>
-        /// Gets or sets the current tracked user id
-        /// </summary>
-        private string currentBuilderStatus = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the current status text to display
-        /// </summary>
-        private string statusText = "Ready To Start Capture";
-
+        //private System.Object blah = new Object();
+        //private System.Windows.Media.CaptureDevice blah = new System.Windows.Media.CaptureDevice();
 
         private System.Windows.Forms.TextBox txtFilename;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button btnCapture;
         private System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.Button btnStop;
         private System.Windows.Forms.Button btnExit;
@@ -150,18 +86,16 @@ namespace CaptureTest
         private System.Windows.Forms.MenuItem mnuInputType;
         private IContainer components;
 
-        //private DateTime date1 = new DateTime(0);
+        
+        //public static ReadOnlyCollection<VideoCaptureDevice> GetAvailableVideoCaptureDevices();
+
+        private DateTime date1 = new DateTime(0);
         private MenuItem menuPostProcess;
         private MenuItem menuRunPostProcess;
         private Label label2;
         private TextBox txt_recordingID;
-        private Label isTrackingLabel;
-        private Label upNeededLabel;
-        private Label rightNeededLabel;
-        private Label leftNeededLabel;
-        private Label frontNeededLabel;
-        private Label captureCompleteLabel;
         private string startEndtimes;
+        //private string refTime;
         Process myProc;
 
         public CaptureTest()
@@ -172,9 +106,20 @@ namespace CaptureTest
             //myProc = Process.Start(dtopfolder + @"\dev\GitHub\Ultraspeech\UltraCapture\FaceTrackingBasics-WPF\bin\x64\Release\FaceTrackingBasics.exe");
 
             //myProc = Process.Start(@"C:\Users\apiladmin\Documents\GitHub\APIL\UltraCapture\FaceTrackingBasics-WPF\bin\x64\Release\FaceTrackingBasics.exe");
-
-            //myProc = Process.Start(@"C:\Users\apiladmin\Desktop\HDFaceBasics-WPF\bin\x64\Debug\HDFaceBasics-WPF.exe");
+            coordinates = kinect.statusText;
+            Console.WriteLine(coordinates.ToString());
+            //myProc = Process.Start(@"C:\Users\apiladmin\Desktop\HDFaceBasics-WPF\bin\x64\Release\HDFaceBasics-WPF.exe");
             //
+
+            //Process process = new System.Diagnostics.Process();
+            //ProcessStartInfo startInfo = new ProcessStartInfo();
+            //startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            //startInfo.FileName = "python.exe";
+            //startInfo.Arguments = @"C:\\Users\\apiladmin\\Desktop\\stimulus.py";
+            //process.StartInfo = startInfo;
+            //process.Start();
+
+
             // Required for Windows Form Designer support
             //
             //Microsoft.Samples.Kinect.HDFaceBasics.MainWindow kinect = new Microsoft.Samples.Kinect.HDFaceBasics.MainWindow();
@@ -182,8 +127,8 @@ namespace CaptureTest
             //kinect.InitializeHDFace();
             InitializeComponent();
             //InitializeKinect();
-            
-            
+            //System.Collections.ObjectModel.ReadOnlyCollection<VideoCapabilities> blah = new System.Collections.ObjectModel.ReadOnlyCollection<VideoCaptureDevice> GetAvailableVideoCaptureDevices();
+            //System.Windows.DependencyObject
             // start 2013-02-19 __ZC__
 
             // need to specify how to get an actual subject ID number
@@ -209,10 +154,6 @@ namespace CaptureTest
             video_name = new_path + @"\" + "video.avi";*/
 
             // end 2013-02-19
-
-
-
-
 
 
             // Start with the first video/audio devices
@@ -265,7 +206,6 @@ namespace CaptureTest
             this.components = new System.ComponentModel.Container();
             this.txtFilename = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.btnCapture = new System.Windows.Forms.Button();
             this.btnStart = new System.Windows.Forms.Button();
             this.btnStop = new System.Windows.Forms.Button();
             this.btnExit = new System.Windows.Forms.Button();
@@ -302,12 +242,6 @@ namespace CaptureTest
             this.btnCue = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.txt_recordingID = new System.Windows.Forms.TextBox();
-            this.isTrackingLabel = new System.Windows.Forms.Label();
-            this.frontNeededLabel = new System.Windows.Forms.Label();
-            this.upNeededLabel = new System.Windows.Forms.Label();
-            this.leftNeededLabel = new System.Windows.Forms.Label();
-            this.rightNeededLabel = new System.Windows.Forms.Label();
-            this.captureCompleteLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // txtFilename
@@ -328,17 +262,6 @@ namespace CaptureTest
             this.label1.TabIndex = 1;
             this.label1.Text = "Filename:";
             //
-            //btnCapture
-            //
-            this.btnCapture.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCapture.Location = new System.Drawing.Point(150, 422);
-            //this.btnCapture.Location = new System.Drawing.Point(500, 600);
-            this.btnCapture.Name = "btnCapture";
-            this.btnCapture.Size = new System.Drawing.Size(60, 24);
-            this.btnCapture.TabIndex = 4;
-            this.btnCapture.Text = "Capture";
-            //this.btnCapture.Click += new System.EventHandler(this.btnCapture_Capture);
-            // 
             // btnStart
             // 
             this.btnStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
@@ -590,97 +513,12 @@ namespace CaptureTest
             this.txt_recordingID.Size = new System.Drawing.Size(103, 20);
             this.txt_recordingID.TabIndex = 10;
             this.txt_recordingID.Text = "000123";
-            //
-            // isTrackingLabel
-            //
-            this.isTrackingLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.isTrackingLabel.Location = new System.Drawing.Point(550, 270);
-            this.isTrackingLabel.Name = "isTrackingLabel";
-            this.isTrackingLabel.TabIndex = 11;
-            this.isTrackingLabel.Text = "Kinect\nNOT\nTracking";
-            //this.isTrackingLabel.Text = "Kinect\nIS\nTracking";
-            this.isTrackingLabel.Font = new Font("Times New Roman", 14);
-            //this.isTrackingLabel.AutoSize = true;
-            this.isTrackingLabel.BackColor = System.Drawing.Color.Red;
-            //this.isTrackingLabel.BackColor = System.Drawing.Color.LawnGreen;
-            this.isTrackingLabel.Size = new System.Drawing.Size(200, 100);
-            this.isTrackingLabel.TextAlign = ContentAlignment.MiddleCenter;
-            //
-            // frontNeededLabel
-            //
-            this.frontNeededLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.frontNeededLabel.Location = new System.Drawing.Point(615, 100);
-            this.frontNeededLabel.Name = "frontNeededLabel";
-            this.frontNeededLabel.TabIndex = 11;
-            //this.frontNeededLabel.Text = "Capture\nFRONT";
-            this.frontNeededLabel.Text = "FRONT\nCaptured";
-            this.frontNeededLabel.Font = new Font("Times New Roman", 14);
-            this.frontNeededLabel.AutoSize = true;
-            //this.frontNeededLabel.BackColor = System.Drawing.Color.Red;
-            //this.frontNeededLabel.BackColor = System.Drawing.Color.Yellow;
-            this.frontNeededLabel.BackColor = System.Drawing.Color.LawnGreen;
-            this.frontNeededLabel.TextAlign = ContentAlignment.MiddleCenter;
-            //
-            // upNeededLabel
-            //
-            this.upNeededLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.upNeededLabel.Location = new System.Drawing.Point(615, 30);
-            this.upNeededLabel.Name = "upNeededLabel";
-            this.upNeededLabel.TabIndex = 11;
-            //this.upNeededLabel.Text = "Capture\nUP";
-            this.upNeededLabel.Text = "UP\nCaptured";
-            this.upNeededLabel.Font = new Font("Times New Roman", 14);
-            this.upNeededLabel.AutoSize = true;
-            //this.upNeededLabel.BackColor = System.Drawing.Color.Red;
-            this.upNeededLabel.BackColor = System.Drawing.Color.LawnGreen;
-            this.upNeededLabel.TextAlign = ContentAlignment.MiddleCenter;
-            //
-            // rightNeededLabel
-            //
-            this.rightNeededLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.rightNeededLabel.Location = new System.Drawing.Point(710, 100);
-            this.rightNeededLabel.Name = "rightNeededLabel";
-            this.rightNeededLabel.TabIndex = 11;
-            //this.rightNeededLabel.Text = "Capture\nRIGHT";
-            this.rightNeededLabel.Text = "RIGHT\nCaptured";
-            this.rightNeededLabel.Font = new Font("Times New Roman", 14);
-            this.rightNeededLabel.AutoSize = true;
-            //this.rightNeededLabel.BackColor = System.Drawing.Color.Red;
-            //this.rightNeededLabel.BackColor = System.Drawing.Color.Yellow;
-            this.rightNeededLabel.BackColor = System.Drawing.Color.LawnGreen;
-            this.upNeededLabel.TextAlign = ContentAlignment.MiddleCenter;
-            //
-            // leftNeededLabel
-            //
-            this.leftNeededLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.leftNeededLabel.Location = new System.Drawing.Point(520, 100);
-            this.leftNeededLabel.Name = "leftNeededLabel";
-            this.leftNeededLabel.TabIndex = 11;
-            //this.leftNeededLabel.Text = "Capture\nLEFT";
-            this.leftNeededLabel.Text = "LEFT\nCaptured";
-            this.leftNeededLabel.Font = new Font("Times New Roman", 14);
-            this.leftNeededLabel.AutoSize = true;
-            //this.leftNeededLabel.BackColor = System.Drawing.Color.Red;
-            this.leftNeededLabel.BackColor = System.Drawing.Color.LawnGreen;
-            this.leftNeededLabel.TextAlign = ContentAlignment.MiddleCenter;
-            //
-            // captureCompleteLabel
-            //
-            this.captureCompleteLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.captureCompleteLabel.Location = new System.Drawing.Point(550, 190);
-            this.captureCompleteLabel.Name = "captureCompleteLabel";
-            this.captureCompleteLabel.TabIndex = 11;
-            this.captureCompleteLabel.Text = "CAPTURE COMPLETE";
-            this.captureCompleteLabel.Font = new Font("Times New Roman", 14);
-            this.captureCompleteLabel.AutoSize = true;
-            this.captureCompleteLabel.BackColor = System.Drawing.Color.LawnGreen;
-            this.captureCompleteLabel.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // CaptureTest
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-            //this.ClientSize = new System.Drawing.Size(504, 455);
-            this.ClientSize = new System.Drawing.Size(800, 475);
+            this.ClientSize = new System.Drawing.Size(504, 455);
+            //this.ClientSize = new System.Drawing.Size(800, 475);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txt_recordingID);
             this.Controls.Add(this.btnCue);
@@ -688,51 +526,16 @@ namespace CaptureTest
             this.Controls.Add(this.btnExit);
             this.Controls.Add(this.btnStop);
             this.Controls.Add(this.btnStart);
-            this.Controls.Add(this.btnCapture);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txtFilename);
-            this.Controls.Add(this.isTrackingLabel);
-            this.Controls.Add(this.frontNeededLabel);
-            this.Controls.Add(this.upNeededLabel);
-            this.Controls.Add(this.rightNeededLabel);
-            this.Controls.Add(this.leftNeededLabel);
-            this.Controls.Add(this.captureCompleteLabel);
             this.Menu = this.mainMenu;
             this.Name = "CaptureTest";
             this.Text = "Ultrasound Capture";
             this.Load += new System.EventHandler(this.CaptureTest_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
-
-            //MainWindow kinect = new MainWindow();
-            //kinect.MainWindow
         }
         #endregion
-
-        //private void rectangle_Paint(object sender, PaintEventArgs paint) //, Rectangle r, String s)
-        //{
-        //    // Create a local version of the graphics object for the PictureBox.
-        //    Graphics g = paint.Graphics;
-
-        //    // Fill a rectangle with a color.
-        //    g.FillRectangle(new SolidBrush(Color.FromName("red")), this.isTracking);
-        //}
-
-        //protected override void OnPaint(PaintEventArgs paintEvnt)
-        //{
-        //    // Get the graphics object 
-        //    Graphics gfx = paintEvnt.Graphics;
-        //    // Create a new pen that we shall use for drawing the line 
-        //    gfx.FillRectangle(new SolidBrush(Color.FromName("red")), this.isTracking);
-        //}
-
-        //public void makegreen(PaintEventArgs paintEvnt)
-        //{
-        //    // Get the graphics object 
-        //    Graphics gfx = paintEvnt.Graphics;
-        //    // Create a new pen that we shall use for drawing the line 
-        //    gfx.FillRectangle(new SolidBrush(Color.FromName("red")), this.isTracking);
-        //}
 
 
         /// <summary>
@@ -744,8 +547,7 @@ namespace CaptureTest
             //System.Windows.Forms.Application.Run(new MainWindow());
             AppDomain currentDomain = AppDomain.CurrentDomain;
             
-            System.Windows.Forms.Application.Run(new CaptureTest());
-            
+            Application.Run(new CaptureTest());
             
 		}
 
@@ -780,30 +582,6 @@ namespace CaptureTest
             }
         }
 
-        private void btnCapture_Click(object sender, System.EventArgs e)
-        {
-            // 2013-02-19 __ZC__
-            // added try/exception from Preview dropdown menu
-            // allows Prevew button to show or hide preview
-            try
-            {
-                Microsoft.Kinect.Face.FaceModelBuilderCollectionStatus CollectionStatus;
-
-                //{
-                //    capture.PreviewWindow = panelVideo;
-                //    mnuPreview.Checked = true;
-                //}
-                //else
-                //{
-                //    capture.PreviewWindow = null;
-                //    mnuPreview.Checked = false;
-                //}
-            }
-            catch (Exception ex)
-            {
-                System.Windows.Forms.MessageBox.Show("Unable to capture face.");
-            }
-        }
 
         private void btnStart_Click(object sender, System.EventArgs e)
         {
@@ -887,6 +665,20 @@ namespace CaptureTest
                     startEndtimes += "Stop time:            " + date1.ToString("yyyyyyyyMMddHHmmssfff") + "\r\n";
 
                     System.IO.File.WriteAllText((new_path + @"\" + "vidTimes.txt"), startEndtimes);
+
+                    // moves the coords.txt from desktop to subjectID folder
+                    string coords_file = "coords.txt";
+                    string ref_coords_file = "ref_coords.txt";
+
+                    string coordSourceFile = System.IO.Path.Combine(dtopfolder, coords_file);
+                    string coordDestFile = System.IO.Path.Combine(new_path, coords_file);
+                    File.Move(coordSourceFile,
+                        coordDestFile);
+
+                    string refSourceFile = System.IO.Path.Combine(dtopfolder, ref_coords_file);
+                    string refDestFile = System.IO.Path.Combine(new_path, ref_coords_file);
+                    File.Move(refSourceFile,
+                        refDestFile);
 
                     btnCue.Enabled = true;
                     // for tracking if video is running
@@ -1608,25 +1400,31 @@ namespace CaptureTest
                 Process process = new System.Diagnostics.Process();
                 ProcessStartInfo startInfo = new ProcessStartInfo();
                 startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+
                 startInfo.FileName = "cmd.exe";
                 // moves the coords.txt from desktop to subjectID folder
                 string coords_file = "coords.txt";
+                string ref_coords_file = "ref_coords.txt";
 
-                string sourceFile = System.IO.Path.Combine(dtopfolder, coords_file);
-                string destFile = System.IO.Path.Combine(new_path, coords_file);
+                string coordSourceFile = System.IO.Path.Combine(dtopfolder, coords_file);
+                string coordDestFile = System.IO.Path.Combine(new_path, coords_file);
+
+                string refSourceFile = System.IO.Path.Combine(dtopfolder, ref_coords_file);
+                string refDestFile = System.IO.Path.Combine(new_path, ref_coords_file);
 
                 //System.Windows.Forms.MessageBox.Show("sourcefile: " + sourceFile);
                 //System.Windows.Forms.MessageBox.Show("destFile: "+destFile);
 
 
-                if (System.IO.File.Exists(sourceFile))
+                if ((System.IO.File.Exists(coordSourceFile)) && (System.IO.File.Exists(refSourceFile)))
                 {
-                    Console.WriteLine("i'll try to move the file");
-                    System.IO.File.Move(sourceFile, destFile);
+                   // Console.WriteLine("I'll try to move the files");
+                    System.IO.File.Move(coordSourceFile, coordDestFile);
+                    System.IO.File.Move(refSourceFile, refDestFile);
                 }
                 else
                 {
-                    System.Windows.Forms.MessageBox.Show("Unable to move coords.txt file.\nFile Not Found!");
+                    System.Windows.Forms.MessageBox.Show("Unable to move coords.txt files.\nFiles Not Found!");
                 }
 
                 // moves the stimulus file from stim folder to subjectID folder
@@ -1646,10 +1444,55 @@ namespace CaptureTest
                 }*/
 
                 // extracts video frames and audio file
-                startInfo.Arguments = @"/C ffmpeg -i " + video_name + " -r 30000/1001 -qscale 0 -f image2 " + frame_folder + @"\frame-%07d.png -acodec copy " + new_path + @"\" + subjectID + ".wav";
-                System.Windows.Forms.MessageBox.Show(startInfo.Arguments.ToString());
+                startInfo.Arguments = @"/C/ffmpeg/bin/ffmpeg -i " + video_name + " -r 30000/1001 -qscale 0 -f image2 " + frame_folder + @"\frame-%07d.png -acodec copy " + new_path + @"\" + subjectID + ".wav";
+                //System.Windows.Forms.MessageBox.Show(startInfo.Arguments.ToString());
                 process.StartInfo = startInfo;
                 process.Start();
+
+                process.WaitForExit();
+                
+                //var py = Python.CreateEngine();
+                //var scope = py.CreateScope();
+                //scope.SetVariable("vidpath",new_path + @"\" + "vidtimes.txt");
+                //scope.SetVariable("coordspath", coordDestFile);
+                //scope.SetVariable("framespath", frame_folder);
+                //scope.SetVariable("wavpath", new_path + @"\" + subjectID + ".wav");
+                //scope.SetVariable("kinect_ref_file", refDestFile);
+                //scope.SetVariable("dirpath", new_path);
+
+                //var paths = py.GetSearchPaths();
+                //string path1 = "C:\\Program Files (x86)\\IronPython 2.7\\Lib";
+                //string path2 = "C:\\Program Files (x86)\\IronPython 2.7\\DLLs";
+                //string path3 = "C:\\Program Files (x86)\\IronPython 2.7";
+                //string path4 = "C:\\Program Files (x86)\\IronPython 2.7\\Lib\\site-packages";
+                //paths.Add(path1);
+                //paths.Add(path2);
+                //paths.Add(path3);
+                //paths.Add(path4);
+                //py.SetSearchPaths(paths);
+                
+                //try
+                //{
+                //    py.ExecuteFile("kinect_rotation.py");
+                //}
+                //catch (Exception exc)
+                //{
+                //    Console.WriteLine("python script - kinect_rotation.py - could not execute. Exception {0}", exc);
+                //}
+                // makes any necessary pitch rotation to the extracted ultrasound video frames
+                startInfo.FileName = "python.exe";
+                //startInfo.RedirectStandardError = true;
+                //startInfo.UseShellExecute = false;  
+                startInfo.Arguments = @"C:\\Users\\apiladmin\\Desktop\\kinect_rotation.py " + new_path + @"\\" + "vidTimes.txt" + " " + coordDestFile + " " + frame_folder + " " + new_path + @"\\" + subjectID + ".wav" + " " + refDestFile + " " + new_path;
+                //System.Windows.Forms.MessageBox.Show(startInfo.Arguments.ToString());
+                process.StartInfo = startInfo;
+                process.Start();
+                //StreamReader se = process.StandardError;
+                ////StreamReader so = process.StandardOutput;
+                //String err = se.ReadToEnd();
+                ////String outp = so.ReadToEnd();
+                //string[] r = err.Split(new char[] { ' ' }); // get the parameter
+                //Console.WriteLine("Standard Error: {0}\n", err);
 
                 process.WaitForExit();
 
@@ -1660,724 +1503,6 @@ namespace CaptureTest
             {
                 System.Windows.Forms.MessageBox.Show("Please STOP recording before Post-Processing");
             }
-        }
-
-
-
-
-        //Below are the Kinect modules taken from HDFace Basics, used to interact with the Kinect
-        ///// <summary>
-        ///// Gets the current collection status
-        ///// </summary>
-        ///// <param name="status">Status value</param>
-        ///// <returns>Status value as text</returns>
-        //private static string GetCollectionStatusText(FaceModelBuilderCollectionStatus status)
-        //{
-        //    string res = string.Empty;
-
-        //    if ((status & FaceModelBuilderCollectionStatus.FrontViewFramesNeeded) != 0)
-        //    {
-        //        res = "FrontViewFramesNeeded";
-        //        return res;
-        //    }
-
-        //    if ((status & FaceModelBuilderCollectionStatus.LeftViewsNeeded) != 0)
-        //    {
-        //        res = "LeftViewsNeeded";
-        //        return res;
-        //    }
-
-        //    if ((status & FaceModelBuilderCollectionStatus.RightViewsNeeded) != 0)
-        //    {
-        //        res = "RightViewsNeeded";
-        //        return res;
-        //    }
-
-        //    if ((status & FaceModelBuilderCollectionStatus.TiltedUpViewsNeeded) != 0)
-        //    {
-        //        res = "TiltedUpViewsNeeded";
-        //        return res;
-        //    }
-
-        //    if ((status & FaceModelBuilderCollectionStatus.MoreFramesNeeded) != 0)
-        //    {
-        //        res = "TiltedUpViewsNeeded";
-        //        return res;
-        //    }
-
-        //    if ((status & FaceModelBuilderCollectionStatus.Complete) != 0)
-        //    {
-        //        res = "Complete";
-        //        return res;
-        //    }
-
-        //    return res;
-        //}
-
-
-        ///// <summary>
-        ///// Start a face capture operation
-        ///// </summary>
-        //private void StartCapture()
-        //{
-        //    this.StopFaceCapture();
-
-        //    this.faceModelBuilder = null;
-
-        //    this.faceModelBuilder = this.highDefinitionFaceFrameSource.OpenModelBuilder(FaceModelBuilderAttributes.None);
-
-        //    this.faceModelBuilder.BeginFaceDataCollection();
-
-
-
-        //    this.faceModelBuilder.CollectionCompleted += this.HdFaceBuilder_CollectionCompleted;
-        //}
-
-        ///// <summary>
-        ///// Cancel the current face capture operation
-        ///// </summary>
-        //private void StopFaceCapture()
-        //{
-        //    if (this.faceModelBuilder != null)
-        //    {
-        //        this.faceModelBuilder.Dispose();
-        //        this.faceModelBuilder = null;
-        //    }
-        //}
-        ///// This event fires when the face capture operation is completed
-        ///// </summary>
-        ///// <param name="sender">object sending the event</param>
-        ///// <param name="e">event arguments</param>
-        //private void HdFaceBuilder_CollectionCompleted(object sender, FaceModelBuilderCollectionCompletedEventArgs e)
-        //{
-        //    var modelData = e.ModelData;
-
-        //    this.currentFaceModel = modelData.ProduceFaceModel();
-
-        //    this.faceModelBuilder.Dispose();
-        //    this.faceModelBuilder = null;
-
-        //    string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        //    //System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
-
-        //    //this.InternalDispose();
-        //    GC.SuppressFinalize(this);
-
-        //    this.CurrentBuilderStatus = "Capture Complete";
-        //}
-
-        //private void InitializeHDFace()
-        //{
-        //    this.CurrentBuilderStatus = "Ready To Start Capture";
-
-        //    this.sensor = KinectSensor.GetDefault();
-        //    //this.quat = 
-        //    this.bodySource = this.sensor.BodyFrameSource;
-        //    this.bodyReader = this.bodySource.OpenReader();
-        //    this.bodyReader.FrameArrived += this.BodyReader_FrameArrived;
-
-        //    this.highDefinitionFaceFrameSource = new HighDefinitionFaceFrameSource(this.sensor);
-        //    this.highDefinitionFaceFrameSource.TrackingIdLost += this.HdFaceSource_TrackingIdLost;
-
-        //    this.highDefinitionFaceFrameReader = this.highDefinitionFaceFrameSource.OpenReader();
-        //    this.highDefinitionFaceFrameReader.FrameArrived += this.HdFaceReader_FrameArrived;
-
-        //    this.currentFaceModel = new FaceModel();
-        //    this.currentFaceAlignment = new FaceAlignment();
-
-        //    this.InitializeMesh();
-        //    this.UpdateMesh();
-
-        //    this.sensor.Open();
-        //}
-
-
-
-        /// <summary>
-        /// Initializes a new instance of the MainWindow class.
-        /// </summary>
-        //public MainWindow()
-        //{
-        //    this.InitializeComponent();
-        //    this.DataContext = this;
-        //}
-        /// <summary>
-        /// INotifyPropertyChangedPropertyChanged event to allow window controls to bind to changeable data
-        /// </summary>
-        //public event PropertyChangedEventHandler PropertyChanged;
-
-        ///// <summary>
-        ///// Gets or sets the current status text to display
-        ///// </summary>
-        //public string StatusText
-        //{
-        //    get
-        //    {
-        //        return this.statusText;
-        //    }
-
-        //    set
-        //    {
-        //        if (this.statusText != value)
-        //        {
-        //            this.statusText = value;
-
-        //            // notify any bound elements that the text has changed
-        //            if (this.PropertyChanged != null)
-        //            {
-        //                this.PropertyChanged(this, new PropertyChangedEventArgs("StatusText"));
-        //            }
-        //        }
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Gets or sets the current tracked user id
-        ///// </summary>
-        //private ulong CurrentTrackingId
-        //{
-        //    get
-        //    {
-        //        return this.currentTrackingId;
-        //    }
-
-        //    set
-        //    {
-        //        this.currentTrackingId = value;
-
-        //        this.StatusText = this.MakeStatusText();
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Gets or sets the current Face Builder instructions to user
-        ///// </summary>
-        //private string CurrentBuilderStatus
-        //{
-        //    get
-        //    {
-        //        return this.currentBuilderStatus;
-        //    }
-
-        //    set
-        //    {
-        //        this.currentBuilderStatus = value;
-
-        //        this.StatusText = this.MakeStatusText();
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Returns the length of a vector from origin
-        ///// </summary>
-        ///// <param name="point">Point in space to find it's distance from origin</param>
-        ///// <returns>Distance from origin</returns>
-        //private static double VectorLength(CameraSpacePoint point)
-        //{
-        //    var result = Math.Pow(point.X, 2) + Math.Pow(point.Y, 2) + Math.Pow(point.Z, 2);
-
-        //    result = Math.Sqrt(result);
-
-        //    return result;
-        //}
-
-        ///// <summary>
-        ///// Finds the closest body from the sensor if any
-        ///// </summary>
-        ///// <param name="bodyFrame">A body frame</param>
-        ///// <returns>Closest body, null of none</returns>
-        //private static Body FindClosestBody(BodyFrame bodyFrame)
-        //{
-        //    Body result = null;
-        //    double closestBodyDistance = double.MaxValue;
-
-        //    Body[] bodies = new Body[bodyFrame.BodyCount];
-        //    bodyFrame.GetAndRefreshBodyData(bodies);
-
-        //    foreach (var body in bodies)
-        //    {
-        //        if (body.IsTracked)
-        //        {
-        //            var currentLocation = body.Joints[JointType.SpineBase].Position;
-
-        //            var currentDistance = VectorLength(currentLocation);
-
-        //            if (result == null || currentDistance < closestBodyDistance)
-        //            {
-        //                result = body;
-        //                closestBodyDistance = currentDistance;
-        //            }
-        //        }
-        //    }
-
-        //    return result;
-        //}
-
-        ///// <summary>
-        ///// Find if there is a body tracked with the given trackingId
-        ///// </summary>
-        ///// <param name="bodyFrame">A body frame</param>
-        ///// <param name="trackingId">The tracking Id</param>
-        ///// <returns>The body object, null of none</returns>
-        //private static Body FindBodyWithTrackingId(BodyFrame bodyFrame, ulong trackingId)
-        //{
-        //    Body result = null;
-
-        //    Body[] bodies = new Body[bodyFrame.BodyCount];
-        //    bodyFrame.GetAndRefreshBodyData(bodies);
-
-        //    foreach (var body in bodies)
-        //    {
-        //        if (body.IsTracked)
-        //        {
-        //            if (body.TrackingId == trackingId)
-        //            {
-        //                result = body;
-        //                break;
-        //            }
-        //        }
-        //    }
-
-        //    return result;
-        //}
-
-        ///// <summary>
-        ///// Gets the current collection status
-        ///// </summary>
-        ///// <param name="status">Status value</param>
-        ///// <returns>Status value as text</returns>
-        //private static string GetCollectionStatusText(FaceModelBuilderCollectionStatus status)
-        //{
-        //    string res = string.Empty;
-
-        //    if ((status & FaceModelBuilderCollectionStatus.FrontViewFramesNeeded) != 0)
-        //    {
-        //        res = "FrontViewFramesNeeded";
-        //        return res;
-        //    }
-
-        //    if ((status & FaceModelBuilderCollectionStatus.LeftViewsNeeded) != 0)
-        //    {
-        //        res = "LeftViewsNeeded";
-        //        return res;
-        //    }
-
-        //    if ((status & FaceModelBuilderCollectionStatus.RightViewsNeeded) != 0)
-        //    {
-        //        res = "RightViewsNeeded";
-        //        return res;
-        //    }
-
-        //    if ((status & FaceModelBuilderCollectionStatus.TiltedUpViewsNeeded) != 0)
-        //    {
-        //        res = "TiltedUpViewsNeeded";
-        //        return res;
-        //    }
-
-        //    if ((status & FaceModelBuilderCollectionStatus.MoreFramesNeeded) != 0)
-        //    {
-        //        res = "TiltedUpViewsNeeded";
-        //        return res;
-        //    }
-
-        //    if ((status & FaceModelBuilderCollectionStatus.Complete) != 0)
-        //    {
-        //        res = "Complete";
-        //        return res;
-        //    }
-
-        //    return res;
-        //}
-
-        ///// <summary>
-        ///// Helper function to format a status message
-        ///// </summary>
-        ///// <returns>Status text</returns>
-        //private string MakeStatusText()
-        //{
-        //    string status = string.Format(System.Globalization.CultureInfo.CurrentCulture, "APIL. Builder Status: {0}, Current Tracking ID: {1}", this.CurrentBuilderStatus, this.CurrentTrackingId);
-
-        //    return status;
-        //}
-
-        ///// <summary>
-        ///// Fires when Window is Loaded
-        ///// </summary>
-        ///// <param name="sender">object sending the event</param>
-        ///// <param name="e">event arguments</param>
-        //private void Window_Loaded(object sender, RoutedEventArgs e)
-        //{
-        //    this.InitializeHDFace();
-        //}
-
-        ///// <summary>
-        ///// Initialize Kinect object
-        ///// </summary>
-        //private void InitializeHDFace()
-        //{
-        //    this.CurrentBuilderStatus = "Ready To Start Capture";
-
-        //    this.sensor = KinectSensor.GetDefault();
-        //    //this.quat = 
-        //    this.bodySource = this.sensor.BodyFrameSource;
-        //    this.bodyReader = this.bodySource.OpenReader();
-        //    this.bodyReader.FrameArrived += this.BodyReader_FrameArrived;
-
-        //    this.highDefinitionFaceFrameSource = new HighDefinitionFaceFrameSource(this.sensor);
-        //    this.highDefinitionFaceFrameSource.TrackingIdLost += this.HdFaceSource_TrackingIdLost;
-
-        //    this.highDefinitionFaceFrameReader = this.highDefinitionFaceFrameSource.OpenReader();
-        //    this.highDefinitionFaceFrameReader.FrameArrived += this.HdFaceReader_FrameArrived;
-
-        //    this.currentFaceModel = new FaceModel();
-        //    this.currentFaceAlignment = new FaceAlignment();
-
-        //    this.InitializeMesh();
-        //    this.UpdateMesh();
-
-        //    this.sensor.Open();
-        //}
-
-        ///// <summary>
-        ///// Initializes a 3D mesh to deform every frame
-        ///// </summary>
-        //private void InitializeMesh()
-        //{
-        //    var vertices = this.currentFaceModel.CalculateVerticesForAlignment(this.currentFaceAlignment);
-
-        //    var triangleIndices = this.currentFaceModel.TriangleIndices;
-
-        //    var indices = new Int32Collection(triangleIndices.Count);
-
-        //    for (int i = 0; i < triangleIndices.Count; i += 3)
-        //    {
-        //        uint index01 = triangleIndices[i];
-        //        uint index02 = triangleIndices[i + 1];
-        //        uint index03 = triangleIndices[i + 2];
-
-        //        indices.Add((int)index03);
-        //        indices.Add((int)index02);
-        //        indices.Add((int)index01);
-        //    }
-
-        //    this.theGeometry.TriangleIndices = indices;
-        //    this.theGeometry.Normals = null;
-        //    this.theGeometry.Positions = new Point3DCollection();
-        //    this.theGeometry.TextureCoordinates = new PointCollection();
-
-        //    foreach (var vert in vertices)
-        //    {
-        //        this.theGeometry.Positions.Add(new Point3D(vert.X, vert.Y, -vert.Z));
-        //        this.theGeometry.TextureCoordinates.Add(new System.Windows.Point());
-        //    }
-
-        //}
-
-        ///// <summary>
-        ///// Sends the new deformed mesh to be drawn
-        ///// </summary>
-        //private void UpdateMesh()
-        //{
-        //    var vertices = this.currentFaceModel.CalculateVerticesForAlignment(this.currentFaceAlignment);
-
-
-        //    for (int i = 0; i < vertices.Count; i++)
-        //    {
-        //        var vert = vertices[i];
-        //        this.theGeometry.Positions[i] = new Point3D(vert.X, vert.Y, -vert.Z);
-        //    }
-
-        //    //Console.WriteLine("Here it is: " + );
-        //    //Console.WriteLine("ANGLE: " + Vector4Face);
-
-        //    //Console.WriteLine("AXIS: " + Quaternion.Identity.Axis.ToString());
-
-        //    //Console.WriteLine("W, X, Y, Z : " + Quaternion.Identity.W.ToString() + "," +
-        //    //                                    Quaternion.Identity.X.ToString() + "," +
-        //    //                                    Quaternion.Identity.Y.ToString() + "," +
-        //    //                                    Quaternion.Identity.Z.ToString());
-
-        //    //Console.WriteLine("ANGLE = " + this.quat.Angle);
-        //    //Console.WriteLine("ISIDENTITY = " + this.quat.IsIdentity);
-        //    //Console.WriteLine("AXIS = " + this.quat.Axis);
-        //    //Console.WriteLine("Orientation (deg): (pitch:" + (this.currentFaceAlignment.FaceOrientation.X * 180).ToString() + ", yaw:" +
-        //    //                                     (this.currentFaceAlignment.FaceOrientation.Y* 180).ToString() + ", roll:" +
-        //    //                                     (this.currentFaceAlignment.FaceOrientation.Z*180).ToString() + ", " +
-        //    //                                     (this.currentFaceAlignment.FaceOrientation.W*180).ToString() + ")");
-        //    //Console.WriteLine("Pivot (cm): (X:" + (this.currentFaceAlignment.HeadPivotPoint.X*100).ToString() + ", Y:" +
-        //    //(this.currentFaceAlignment.HeadPivotPoint.Y*100).ToString() + "Z:, " +
-        //    //(this.currentFaceAlignment.HeadPivotPoint.Z*100).ToString() + ")");
-
-
-        //    double w = this.currentFaceAlignment.FaceOrientation.W;
-        //    double x = this.currentFaceAlignment.FaceOrientation.X;
-        //    double y = this.currentFaceAlignment.FaceOrientation.Y;
-        //    double z = this.currentFaceAlignment.FaceOrientation.Z;
-
-        //    double w2 = Math.Pow(w, 2);
-        //    double x2 = Math.Pow(x, 2);
-        //    double y2 = Math.Pow(y, 2);
-        //    double z2 = Math.Pow(z, 2);
-
-        //    //CHRobot (rolando cited)
-        //    //double roll = Math.Atan2(2*(w*x + y*z), (w2-x2-y2+z2));
-        //    //double pitch = -1 * (Math.Asin(2*(x*z - w*y)));
-        //    //double yaw = Math.Atan2(2*(w*z + x*y), (w2+x2-y2-z2));
-
-        //    //Rolando Pitch
-        //    double rpitch = Math.Atan2(2 * (x * y + z * w), 1 - (2 * (y2 + z2)));
-
-        //    //Wikipedia convert quat to euler
-        //    //double roll = Math.Atan2(2 * ((w * x) + (y * z)), (1 - (2 * (x2 + y2))));
-        //    //double pitch = -1 * (Math.Asin(2 * ((w * y) - (x * z))));
-        //    //double yaw = Math.Atan2(2 * ((w * z) + (x * y)), (1 - (2 * (y2 + z2))));
-
-        //    //euclideanspace.com quat to euler
-        //    double yaw = Math.Atan2(2 * (y * w) - 2 * (x * z), 1 - (2 * (y2)) - (2 * (z2)));
-        //    double roll = Math.Asin(2 * (x * y) + 2 * (z * w));
-        //    double pitch = Math.Atan2(2 * (x * w) - 2 * (y * z), 1 - (2 * (x2)) - (2 * (z2)));
-
-        //    yaw = Math.Round((yaw * (180 / Math.PI)) * -1, 1);
-        //    pitch = Math.Round(pitch * (180 / Math.PI), 1);
-        //    roll = Math.Round((roll * (180 / Math.PI)) * -1, 1);
-
-        //    //Attempt to back-calculate the "angle" variable which 'looks' like it could be used to calc p/y/r
-        //    double angle = Math.Acos(w) * 2;
-        //    double n_x = x / Math.Sin(0.5 * angle);
-        //    double n_z = z / Math.Sin(0.5 * angle);
-        //    double n_y = y / Math.Sin(0.5 * angle);
-
-        //    //from math.stackexchange site
-        //    //double roll = Math.Atan2(((y * z) + (w * x)), 0.5 - (x2 + y2));
-        //    //double pitch = Math.Asin(-2 * ((x * z)+(w * y)));
-        //    //double yaw = Math.Atan2((x * y)+(w * z), 0.5 - (y2 + z2));
-
-
-        //    Console.WriteLine("Pitch: " + pitch.ToString() + " Roll: " + roll.ToString() + " Yaw: " + yaw.ToString());
-
-        //    //Console.WriteLine(quat.ToString());
-
-        //    //date1 = DateTime.Now;
-
-        //    //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Rotation:    (Pitch: " + ((this.currentFaceAlignment.FaceOrientation.X)*180).ToString();
-        //    //coordinates += "°, Yaw: " + ((this.currentFaceAlignment.FaceOrientation.Y)*180).ToString(); 
-        //    //coordinates += "°, Roll: " + ((this.currentFaceAlignment.FaceOrientation.Z)*180).ToString();
-        //    //coordinates += ")\r\n";
-        //    //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Translation: (Zero point in X-Axis: " + this.currentFaceAlignment.HeadPivotPoint.X.ToString() + " mm, Zero-point in Y-Axis: " + this.currentFaceAlignment.HeadPivotPoint.Y.ToString() + " mm, Distance from Kinect: " + this.currentFaceAlignment.HeadPivotPoint.Z.ToString() + " mm)" + "\r\n";
-
-        //    coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Rotation:    (Pitch: " + pitch.ToString();
-        //    coordinates += "°, Yaw: " + yaw.ToString();
-        //    coordinates += "°, Roll: " + roll.ToString();
-        //    coordinates += ")\r\n";
-        //    coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Translation: (Zero point in X-Axis: " + this.currentFaceAlignment.HeadPivotPoint.X.ToString() + " mm, Zero-point in Y-Axis: " + this.currentFaceAlignment.HeadPivotPoint.Y.ToString() + " mm, Distance from Kinect: " + this.currentFaceAlignment.HeadPivotPoint.Z.ToString() + " mm)" + "\r\n";
-
-
-        //    //Console.WriteLine(coordinates.ToString());
-
-        //    string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        //    System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
-        //}
-
-        ///// <summary>
-        ///// Start a face capture on clicking the button
-        ///// </summary>
-        ///// <param name="sender">object sending the event</param>
-        ///// <param name="e">event arguments</param>
-        //private void StartCapture_Button_Click(object sender, RoutedEventArgs e)
-        //{
-        //    this.StartCapture();
-        //}
-
-        ///// <summary>
-        ///// Disposes this instance and clears the native resources allocated
-        ///// </summary>
-        //public void Dispose()
-        //{
-        //    string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        //    System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
-
-        //    //this.InternalDispose();
-        //    GC.SuppressFinalize(this);
-        //}
-
-
-        ///// <summary>
-        ///// This event fires when a BodyFrame is ready for consumption
-        ///// </summary>
-        ///// <param name="sender">object sending the event</param>
-        ///// <param name="e">event arguments</param>
-        //private void BodyReader_FrameArrived(object sender, BodyFrameArrivedEventArgs e)
-        //{
-        //    this.CheckOnBuilderStatus();
-
-        //    var frameReference = e.FrameReference;
-        //    using (var frame = frameReference.AcquireFrame())
-        //    {
-        //        if (frame == null)
-        //        {
-        //            // We might miss the chance to acquire the frame, it will be null if it's missed
-        //            return;
-        //        }
-
-        //        if (this.currentTrackedBody != null)
-        //        {
-        //            this.currentTrackedBody = FindBodyWithTrackingId(frame, this.CurrentTrackingId);
-
-        //            if (this.currentTrackedBody != null)
-        //            {
-        //                return;
-        //            }
-        //        }
-
-        //        Body selectedBody = FindClosestBody(frame);
-
-        //        if (selectedBody == null)
-        //        {
-        //            return;
-        //        }
-
-        //        this.currentTrackedBody = selectedBody;
-        //        this.CurrentTrackingId = selectedBody.TrackingId;
-
-        //        this.highDefinitionFaceFrameSource.TrackingId = this.CurrentTrackingId;
-        //    }
-        //}
-
-        ///// <summary>
-        ///// This event is fired when a tracking is lost for a body tracked by HDFace Tracker
-        ///// </summary>
-        ///// <param name="sender">object sending the event</param>
-        ///// <param name="e">event arguments</param>
-        //private void HdFaceSource_TrackingIdLost(object sender, TrackingIdLostEventArgs e)
-        //{
-        //    var lostTrackingID = e.TrackingId;
-
-        //    if (this.CurrentTrackingId == lostTrackingID)
-        //    {
-        //        this.CurrentTrackingId = 0;
-        //        this.currentTrackedBody = null;
-        //        this.isTrackingLabel.Text = "Kinect IS Tracking";
-        //        this.isTrackingLabel.BackColor = System.Drawing.Color.Green;
-        //        if (this.faceModelBuilder != null)
-        //        {
-        //            this.faceModelBuilder.Dispose();
-        //            this.faceModelBuilder = null;
-        //        }
-
-        //        this.highDefinitionFaceFrameSource.TrackingId = 0;
-        //    }
-        //}
-
-        ///// <summary>
-        ///// This event is fired when a new HDFace frame is ready for consumption
-        ///// </summary>
-        ///// <param name="sender">object sending the event</param>
-        ///// <param name="e">event arguments</param>
-        //private void HdFaceReader_FrameArrived(object sender, HighDefinitionFaceFrameArrivedEventArgs e)
-        //{
-        //    using (var frame = e.FrameReference.AcquireFrame())
-        //    {
-        //        // We might miss the chance to acquire the frame; it will be null if it's missed.
-        //        // Also ignore this frame if face tracking failed.
-        //        if (frame == null || !frame.IsFaceTracked)
-        //        {
-        //            return;
-        //        }
-        //        date1 = DateTime.Now;
-
-        //        //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Rotation:    (Pitch: " + ((this.currentFaceAlignment.FaceOrientation.X + 1)*180).ToString();
-        //        //coordinates += "°, Yaw: " + ((this.currentFaceAlignment.FaceOrientation.Y + 1)*180).ToString();
-        //        //coordinates += "°, Roll: " + ((this.currentFaceAlignment.FaceOrientation.Z + 1) * 180).ToString() + ")";
-        //        //coordinates += "\r\n";
-        //        //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Translation: (Zero point in X-Axis: " + this.currentFaceAlignment.HeadPivotPoint.X.ToString() + " mm, Zero-point in Y-Axis: " + this.currentFaceAlignment.HeadPivotPoint.Y.ToString() + " mm, Distance from Kinect: " + this.currentFaceAlignment.HeadPivotPoint.Z.ToString() + " mm)" + "\r\n";
-
-        //        //string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        //        //System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
-
-        //        frame.GetAndRefreshFaceAlignmentResult(this.currentFaceAlignment);
-
-        //        Console.WriteLine(frame.RelativeTime.ToString());
-
-        //        this.UpdateMesh();
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Start a face capture operation
-        ///// </summary>
-        //private void StartCapture()
-        //{
-        //    this.StopFaceCapture();
-
-        //    this.faceModelBuilder = null;
-
-        //    this.faceModelBuilder = this.highDefinitionFaceFrameSource.OpenModelBuilder(FaceModelBuilderAttributes.None);
-
-        //    this.faceModelBuilder.BeginFaceDataCollection();
-
-
-
-        //    this.faceModelBuilder.CollectionCompleted += this.HdFaceBuilder_CollectionCompleted;
-        //}
-
-        ///// <summary>
-        ///// Cancel the current face capture operation
-        ///// </summary>
-        //private void StopFaceCapture()
-        //{
-        //    if (this.faceModelBuilder != null)
-        //    {
-        //        this.faceModelBuilder.Dispose();
-        //        this.faceModelBuilder = null;
-        //    }
-        //}
-
-        ///// <summary>
-        ///// This event fires when the face capture operation is completed
-        ///// </summary>
-        ///// <param name="sender">object sending the event</param>
-        ///// <param name="e">event arguments</param>
-        //private void HdFaceBuilder_CollectionCompleted(object sender, FaceModelBuilderCollectionCompletedEventArgs e)
-        //{
-        //    var modelData = e.ModelData;
-
-        //    this.currentFaceModel = modelData.ProduceFaceModel();
-
-        //    this.faceModelBuilder.Dispose();
-        //    this.faceModelBuilder = null;
-
-        //    string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        //    System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
-
-        //    //this.InternalDispose();
-        //    GC.SuppressFinalize(this);
-
-        //    this.CurrentBuilderStatus = "Capture Complete";
-        //}
-
-        ///// <summary>
-        ///// Check the face model builder status
-        ///// </summary>
-        //private void CheckOnBuilderStatus()
-        //{
-        //    if (this.faceModelBuilder == null)
-        //    {
-        //        return;
-        //    }
-
-        //    string newStatus = string.Empty;
-
-        //    var captureStatus = this.faceModelBuilder.CaptureStatus;
-        //    newStatus += captureStatus.ToString();
-
-        //    var collectionStatus = this.faceModelBuilder.CollectionStatus;
-
-        //    newStatus += ", " + GetCollectionStatusText(collectionStatus);
-
-        //    this.CurrentBuilderStatus = newStatus;
-        //}
-
-
-        
+        }        
     }
 }
