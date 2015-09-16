@@ -41,10 +41,11 @@ namespace VideoPostProcessor
             {
                 file = openFileDialog1.FileName;
                 fullPath = openFileDialog1.FileName;
+                Console.WriteLine(fullPath);
                 fileName = openFileDialog1.SafeFileName;
                 path = fullPath.Replace(fileName, "");
                 folderName = Path.GetFileName(Path.GetDirectoryName(path));
-
+                Console.WriteLine(Directory.GetCurrentDirectory());
                 //MessageBox.Show("File: " + file + "\nFullPath: " + fullPath + "\nFolder: " + folderName + "\nFilename: " + fileName + "\nPath: " + path + "\nDesktop Folder: " + dtopfolder);
                 button2.Enabled = true;
                 label1.Text = @"\" + folderName + @"\" + fileName;
@@ -61,7 +62,7 @@ namespace VideoPostProcessor
             label2.Text = "Processing Video...";
             Process process = new System.Diagnostics.Process();
             ProcessStartInfo startInfo = new ProcessStartInfo();
-
+            
             // keeps FFMPEG window hidden unless the menu item is checked
             if (showFFMPEGToolStripMenuItem.Checked == false)
             {
@@ -69,15 +70,16 @@ namespace VideoPostProcessor
 
             }
 
-            startInfo.FileName = "ffmpeg.exe";
-            
+            //startInfo.FileName = @"C:\Users\apiladmin\Documents\Github\data-collection\VideoPostProcessor\VideoPostProcessor\..\..\ffmpeg\bin\ffmpeg.exe";
+            startInfo.FileName = @"" + Directory.GetCurrentDirectory() + @"\..\..\..\..\ffmpeg\bin\ffmpeg.exe";
+            Console.WriteLine(Directory.GetCurrentDirectory());
             // start arguments string
             string args = "-i " + fullPath;
 
             if (jPEGToolStripMenuItem.Checked == true)
             {
                 // create output folder for JPG frames
-                frameFolder = path + "frames_jpg";
+                frameFolder = path + "frames";
                 if (!(System.IO.Directory.Exists(frameFolder)))
                 {
                     System.IO.Directory.CreateDirectory(frameFolder);
@@ -90,7 +92,7 @@ namespace VideoPostProcessor
                     return;
                 }
                 //use FFMPEG JPEG command here
-                args += " -r 30000/1001 -q:v 0 -f image2 " + frameFolder + "/" + folderName + "-%07d.jpg";
+                args += " -r 30000/1001 -q:v 0 -f image2 " + frameFolder + "/" + "frame-%07d.jpg";
             }
             else if (pNGToolStripMenuItem.Checked == true)
             {
@@ -114,6 +116,7 @@ namespace VideoPostProcessor
             {
                 // check for audio file
                 string audioFile = path + folderName + ".wav";
+                Console.WriteLine(audioFile);
                 if (System.IO.File.Exists(audioFile))
                 {
                     label2.Text = "Error! Audio file already exists.";
@@ -143,7 +146,7 @@ namespace VideoPostProcessor
 
         private void jPEGToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            pNGToolStripMenuItem.Checked = false;
+            pNGToolStripMenuItem.Checked = true;
         }
 
         private void pNGToolStripMenuItem_Click(object sender, EventArgs e)
