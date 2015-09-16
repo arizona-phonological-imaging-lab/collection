@@ -221,6 +221,7 @@ AppPackages/
 
 # Others
 ClientBin/
+Recordings/
 [Ss]tyle[Cc]op.*
 ~$*
 *~
