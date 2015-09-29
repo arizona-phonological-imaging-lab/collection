@@ -33,7 +33,7 @@
         <TextBlock x:Name="txt_Status" Grid.Row="1"  Text="{Binding StatusText}" />
         <Button Click="StartCapture_Button_Click" Grid.RowSpan="2" Margin="0,60,0,0" Content="Capture Face" />
         <Button x:Name="refCoordButton" Click="RefCoordCapture_Button_Click" Grid.Row="3" Margin="0,14,0,86" Grid.RowSpan="2" >Take Reference Coordinates</Button>
-        <Button Click="WriteCoords_Button_Click" Grid.Row="4" Margin="0,26,0,36">End Recording</Button>
+        <Button x:Name="writeCoordsButton" Click="WriteCoords_Button_Click" Grid.Row="4" Margin="0,26,0,36">End Recording</Button>
 
         <Viewport3D  Grid.Row="5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" Height="Auto" x:Name="viewport3d" RenderTransformOrigin="0.5,0.5" IsEnabled="False" Opacity="0" Margin="0,10,10,11" Grid.RowSpan="2" >
             <Viewport3D.RenderTransform>

@@ -19,7 +19,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        int i = 0;
+        //int i = 0;
         System.Collections.Generic.Queue<Tuple<double, double, double, string, string, string, string>> q = new System.Collections.Generic.Queue<Tuple<double, double, double, string, string, string, string>>();
         /// <summary>
         /// Currently used KinectSensor
@@ -89,7 +89,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// <summary>
         /// Gets or sets the current status text to display
         /// </summary>
-        public string statusText = "Ready To Start Capture";
+        private string statusText = "Ready To Start Capture";
 
         //var converter = new System.Windows.Media.BrushConverter();
 
@@ -349,7 +349,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// <summary>
         /// Initialize Kinect object
         /// </summary>
-        private void InitializeHDFace()
+        public void InitializeHDFace()
         {
             this.CurrentBuilderStatus = "Ready To Start Capture";
 
@@ -479,7 +479,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
 
             
             //check to see if the reference coordinates have been obtained yet
-            if (this.refCoordButton.IsEnabled == false)
+            if (this.refCoordButton.IsEnabled == false && this.writeCoordsButton.IsEnabled == true)
             {
                 //Obtain Coordinates
                 var coords = this.GetCoords();
@@ -607,6 +607,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         private void WriteCoords_Button_Click(object sender, RoutedEventArgs e)
         {
             this.WriteCoords();
+            writeCoordsButton.IsEnabled = false;
             //this.refCoordButton.IsEnabled = false;
         }
 
@@ -764,23 +765,26 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// <summary>
         /// Write the coordinates collected to a file
         /// </summary>
-        private void WriteCoords()
+        public void WriteCoords()
         {
-            //System.Linq.Enumerable.Range(0,q.Count);
-            while (q.Count > 0){
-                var coords = q.Dequeue();
-                //double pitch = coords.Item1;
-                //double yaw = coords.Item2;
-                //double roll = coords.Item3;
-                //string transX = coords.Item4;
-                //string transY = coords.Item5;
-                //string transZ = coords.Item6;
-                //string date = coords.Item7;
-                coordinates += "Time: " + coords.Item7 + " Rotation:    (Pitch: " + coords.Item1.ToString() +
-                                "°, Yaw: " + coords.Item2.ToString() + "°, Roll: " + coords.Item3.ToString() + ")\r\n" +
-                                "Time: " + coords.Item7 + " Translation: (Zero point in X-Axis: " + coords.Item4 +
-                                " mm, Zero-point in Y-Axis: " + coords.Item5 + " mm, Distance from Kinect: " +
-                                coords.Item6 + " mm)" + "\r\n";
+            if (writeCoordsButton.IsEnabled == true)
+            {
+                while (q.Count > 0)
+                {
+                    var coords = q.Dequeue();
+                    //double pitch = coords.Item1;
+                    //double yaw = coords.Item2;
+                    //double roll = coords.Item3;
+                    //string transX = coords.Item4;
+                    //string transY = coords.Item5;
+                    //string transZ = coords.Item6;
+                    //string date = coords.Item7;
+                    coordinates += "Time: " + coords.Item7 + " Rotation:    (Pitch: " + coords.Item1.ToString() +
+                                    "°, Yaw: " + coords.Item2.ToString() + "°, Roll: " + coords.Item3.ToString() + ")\r\n" +
+                                    "Time: " + coords.Item7 + " Translation: (Zero point in X-Axis: " + coords.Item4 +
+                                    " mm, Zero-point in Y-Axis: " + coords.Item5 + " mm, Distance from Kinect: " +
+                                    coords.Item6 + " mm)" + "\r\n";
+                }
             }
             string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);

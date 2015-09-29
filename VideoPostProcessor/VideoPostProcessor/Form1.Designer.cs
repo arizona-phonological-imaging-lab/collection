@@ -75,11 +75,11 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 78);
+            this.label1.Location = new System.Drawing.Point(12, 84);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(78, 13);
+            this.label1.Size = new System.Drawing.Size(31, 13);
             this.label1.TabIndex = 2;
-            this.label1.Text = "no file selected";
+            this.label1.Text = "Files:";
             // 
             // menuStrip1
             // 
@@ -87,7 +87,7 @@
             this.optionsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(319, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(632, 24);
             this.menuStrip1.TabIndex = 3;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -129,9 +129,7 @@
             // 
             // jPEGToolStripMenuItem
             // 
-            this.jPEGToolStripMenuItem.Checked = true;
             this.jPEGToolStripMenuItem.CheckOnClick = true;
-            this.jPEGToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.jPEGToolStripMenuItem.Name = "jPEGToolStripMenuItem";
             this.jPEGToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
             this.jPEGToolStripMenuItem.Text = "JPEG";
@@ -139,7 +137,9 @@
             // 
             // pNGToolStripMenuItem
             // 
+            this.pNGToolStripMenuItem.Checked = true;
             this.pNGToolStripMenuItem.CheckOnClick = true;
+            this.pNGToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.pNGToolStripMenuItem.Name = "pNGToolStripMenuItem";
             this.pNGToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
             this.pNGToolStripMenuItem.Text = "PNG";
@@ -184,7 +184,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 110);
+            this.label2.Location = new System.Drawing.Point(282, 84);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(124, 13);
             this.label2.TabIndex = 4;
@@ -195,7 +195,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(319, 157);
+            this.ClientSize = new System.Drawing.Size(632, 238);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.button2);

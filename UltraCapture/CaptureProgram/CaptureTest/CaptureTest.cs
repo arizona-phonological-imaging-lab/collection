@@ -40,7 +40,7 @@ namespace CaptureTest
         private string date_today = DateTime.Now.ToString("yyyy-MM-dd");
         private string launch_time = DateTime.Now.ToString("HH:mm:ss");
         private string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        private MainWindow kinect = new MainWindow();
+        public MainWindow kinect = new MainWindow();
         public string coordinates;
         
         private string subjectID;
@@ -106,11 +106,11 @@ namespace CaptureTest
             //myProc = Process.Start(dtopfolder + @"\dev\GitHub\Ultraspeech\UltraCapture\FaceTrackingBasics-WPF\bin\x64\Release\FaceTrackingBasics.exe");
 
             //myProc = Process.Start(@"C:\Users\apiladmin\Documents\GitHub\APIL\UltraCapture\FaceTrackingBasics-WPF\bin\x64\Release\FaceTrackingBasics.exe");
-            coordinates = kinect.statusText;
-            Console.WriteLine(coordinates.ToString());
+            //coordinates = kinect.statusText;
+            //Console.WriteLine(coordinates.ToString());
             //myProc = Process.Start(@"C:\Users\apiladmin\Desktop\HDFaceBasics-WPF\bin\x64\Release\HDFaceBasics-WPF.exe");
             //
-
+            //myProc = Process.Start(@"C:\Users\apiladmin\Documents\Github\data-collection\UltraCapture\CaptureProgram\HDFaceBasics-WPF\bin\x64\Debug\HDFaceBasics-WPF.exe");
             //Process process = new System.Diagnostics.Process();
             //ProcessStartInfo startInfo = new ProcessStartInfo();
             //startInfo.WindowStyle = ProcessWindowStyle.Hidden;
@@ -119,18 +119,21 @@ namespace CaptureTest
             //process.StartInfo = startInfo;
             //process.Start();
 
-
+            //var kinect = new MainWindow();
             // Required for Windows Form Designer support
             //
             //Microsoft.Samples.Kinect.HDFaceBasics.MainWindow kinect = new Microsoft.Samples.Kinect.HDFaceBasics.MainWindow();
+            //System.Threading.Thread kinectThread = new System.Threading.Thread(kinect.InitializeComponent());
             //kinect.InitializeComponent();
             //kinect.InitializeHDFace();
+            //Console.WriteLine("blah");
             InitializeComponent();
             //InitializeKinect();
             //System.Collections.ObjectModel.ReadOnlyCollection<VideoCapabilities> blah = new System.Collections.ObjectModel.ReadOnlyCollection<VideoCaptureDevice> GetAvailableVideoCaptureDevices();
             //System.Windows.DependencyObject
             // start 2013-02-19 __ZC__
-
+       
+            //var kinect = new MainWindow();
             // need to specify how to get an actual subject ID number
             //subjectID = "000123";
             /*subjectID = txt_recordingID.Text;
@@ -170,6 +173,7 @@ namespace CaptureTest
             ////#endif
             // ======================================================
 
+            
             // Update the main menu
             // Much of the interesting work of this sample occurs here
 
@@ -546,8 +550,17 @@ namespace CaptureTest
 		{
             //System.Windows.Forms.Application.Run(new MainWindow());
             AppDomain currentDomain = AppDomain.CurrentDomain;
-            
+
+            //MainWindow kinect = new MainWindow();
+            var kinect = new MainWindow();
+            System.Threading.Thread kinectThread = new System.Threading.Thread(kinect.InitializeComponent);
+            kinectThread.Start();
+            //kinect.InitializeComponent();
+            //kinect.InitializeHDFace();
+            //Console.WriteLine("blah");
+            //InitializeComponent();
             Application.Run(new CaptureTest());
+
             
 		}
 
@@ -555,6 +568,7 @@ namespace CaptureTest
         {
             if (capture != null)
                 capture.Stop();
+            kinect.WriteCoords();
             System.Windows.Forms.Application.Exit();
         }
 
@@ -653,7 +667,9 @@ namespace CaptureTest
                 if (btnStart.BackColor == System.Drawing.Color.Red)
                 {
                     // 4-22-2013 removing process for Face Tracking?? doesn't work on Laptop
-                    myProc.CloseMainWindow();
+                    kinect.WriteCoords();
+                    //kinectThread.Abort();
+                    //myProc.CloseMainWindow();
                     // Changed from Kill() to CloseMainWindow() so that coords.txt is generated
                     //myProc.Kill();
 
