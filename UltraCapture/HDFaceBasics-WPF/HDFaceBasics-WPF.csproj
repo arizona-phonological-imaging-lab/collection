@@ -44,12 +44,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\x64\Debug\HDFaceBasics-WPF.exe</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Kinect, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <Private>True</Private>
-      <HintPath>packages\Microsoft.Kinect.2.0.1407.31003\lib\net45\Microsoft.Kinect.dll</HintPath>
+    <Reference Include="Microsoft.Kinect, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Program Files\Microsoft SDKs\Kinect\MainV2\Samples\Managed\HDFaceBasics-WPF\bin\x64\Debug\Microsoft.Kinect.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Kinect.Face, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>packages\Microsoft.Kinect.Face.2.0.1407.31003\lib\net45\Microsoft.Kinect.Face.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Program Files\Microsoft SDKs\Kinect\MainV2\Samples\Managed\HDFaceBasics-WPF\bin\x64\Debug\Microsoft.Kinect.Face.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

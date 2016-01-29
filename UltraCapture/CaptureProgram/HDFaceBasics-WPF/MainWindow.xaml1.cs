@@ -82,6 +82,11 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         private ulong currentTrackingId = 0;
 
         /// <summary>
+        /// The ID for the last incoming frame
+        /// </summary>
+        private ulong pastTrackingId = 0;
+
+        /// <summary>
         /// Gets or sets the current tracked user id
         /// </summary>
         private string currentBuilderStatus = string.Empty;
@@ -145,6 +150,21 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             set
             {
                 this.currentTrackingId = value;
+
+                this.StatusText = this.MakeStatusText();
+            }
+        }
+
+        private ulong PastTrackingId
+        {
+            get
+            {
+                return this.pastTrackingId;
+            }
+
+            set
+            {
+                this.pastTrackingId = value;
 
                 this.StatusText = this.MakeStatusText();
             }
@@ -537,11 +557,18 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
                 }
             }
 
-            if (this.CurrentTrackingId != 0)
+            if (this.CurrentTrackingId != 0 || this.PastTrackingId != 0)
             {
+                //this.PastTrackingId = this.CurrentTrackingId;
                 this.trackLabel.Text = "TRACKING";
                 this.trackLabel.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF0AA60A");
             }
+            //else if (this.CurrentTrackingId == 0 && this.PastTrackingId == 0)
+            //{
+            //    this.PastTrackingId = this.CurrentTrackingId;
+            //    this.trackLabel.Text = "NOT TRACKING";
+            //    this.trackLabel.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707"); //Red
+            //}
 
             //string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             //System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);

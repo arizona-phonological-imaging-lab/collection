@@ -20,8 +20,8 @@ using DirectX.Capture;
 using Microsoft.VisualBasic;
 using ScreenShotDemo;
 using System.Drawing.Imaging;
-using IronPython.Hosting;
-using IronPython;
+//using IronPython.Hosting;
+//using IronPython;
 //using Microsoft.Kinect;
 //using Microsoft.Kinect.Face;
 using Microsoft.Samples.Kinect.HDFaceBasics;
@@ -122,12 +122,16 @@ namespace CaptureTest
             //var kinect = new MainWindow();
             // Required for Windows Form Designer support
             //
-            //Microsoft.Samples.Kinect.HDFaceBasics.MainWindow kinect = new Microsoft.Samples.Kinect.HDFaceBasics.MainWindow();
+            Microsoft.Samples.Kinect.HDFaceBasics.MainWindow kinect_init = new Microsoft.Samples.Kinect.HDFaceBasics.MainWindow();
             //System.Threading.Thread kinectThread = new System.Threading.Thread(kinect.InitializeComponent());
+            System.Threading.ThreadStart kinect = new System.Threading.ThreadStart(kinect_init.InitializeComponent);
+            System.Threading.Thread kinectThread = new System.Threading.Thread(kinect);
+            kinectThread.Start();
             //kinect.InitializeComponent();
             //kinect.InitializeHDFace();
             //Console.WriteLine("blah");
             InitializeComponent();
+            Console.WriteLine("Hello");
             //InitializeKinect();
             //System.Collections.ObjectModel.ReadOnlyCollection<VideoCapabilities> blah = new System.Collections.ObjectModel.ReadOnlyCollection<VideoCaptureDevice> GetAvailableVideoCaptureDevices();
             //System.Windows.DependencyObject

@@ -259,6 +259,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             if ((status & FaceModelBuilderCollectionStatus.RightViewsNeeded) != 0)
             {
                 res = "RightViewsNeeded";
+                //res = "right";
                 return res;
             }
 
