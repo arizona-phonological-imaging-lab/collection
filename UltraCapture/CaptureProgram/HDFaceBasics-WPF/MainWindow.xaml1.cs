@@ -11,6 +11,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
     using System.Windows;
     using System.Windows.Media;
     using System.Windows.Media.Media3D;
+    using System.Windows.Forms;
     using Microsoft.Kinect;
     using Microsoft.Kinect.Face;
 
@@ -35,7 +36,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// Body frame reader to get body frames
         /// </summary>
         private BodyFrameReader bodyReader = null;
-
+        public delegate void SetTextCallback(Button text);
         public string coordinates;
 
         //Establishes the tuple to hold the reference coordinates
@@ -98,13 +99,18 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
 
         //var converter = new System.Windows.Media.BrushConverter();
 
+        public Button btnXExit;
+
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
-        public MainWindow()
+        public void Entrance(Button btnExit)
         {
-            this.InitializeComponent();
-            this.DataContext = this;
+            Console.WriteLine(btnExit.ToString());
+            //this.InitializeComponent();
+            //this.DataContext = this;
+            this.btnXExit = btnExit;
+            this.InitializeHDFace();
         }
 
         /// <summary>
@@ -374,11 +380,11 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             this.CurrentBuilderStatus = "Ready To Start Capture";
 
             this.sensor = KinectSensor.GetDefault();
-            //this.quat = 
+            //Console.WriteLine(this.sensor.IsAvailable);
             this.bodySource = this.sensor.BodyFrameSource;
             this.bodyReader = this.bodySource.OpenReader();
             this.bodyReader.FrameArrived += this.BodyReader_FrameArrived;
-
+            Console.WriteLine("Inside Kinect Code");
             this.highDefinitionFaceFrameSource = new HighDefinitionFaceFrameSource(this.sensor);
             this.highDefinitionFaceFrameSource.TrackingIdLost += this.HdFaceSource_TrackingIdLost;
 
@@ -435,6 +441,24 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             //    this.theGeometry.TextureCoordinates.Add(new Point());
             //}
 
+        }
+
+        private void SetText(Button btnXExit)
+        {
+            // InvokeRequired required compares the thread ID of the
+            // calling thread to the thread ID of the creating thread.
+            // If these threads are different, it returns true.
+            if (this.btnXExit.InvokeRequired)
+            {
+                SetTextCallback d = new SetTextCallback(this.SetText);
+                System.Windows.Forms.Control e = new System.Windows.Forms.Control();
+                e.Invoke(d, new object[] { btnXExit });
+                
+            }
+            else
+            {
+                this.btnXExit.Text = "BOO!";
+            }
         }
 
         /// <summary>
@@ -496,8 +520,9 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             //coordinates += "°, Roll: " + roll.ToString();
             //coordinates += ")\r\n";
             //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Translation: (Zero point in X-Axis: " + this.currentFaceAlignment.HeadPivotPoint.X.ToString() + " mm, Zero-point in Y-Axis: " + this.currentFaceAlignment.HeadPivotPoint.Y.ToString() + " mm, Distance from Kinect: " + this.currentFaceAlignment.HeadPivotPoint.Z.ToString() + " mm)" + "\r\n";
-
-            
+            this.SetText(btnXExit);
+            Console.WriteLine("Exit Just turned Red");
+            System.Threading.Thread.Sleep(10000);
             //check to see if the reference coordinates have been obtained yet
             if (this.refCoordButton.IsEnabled == false && this.writeCoordsButton.IsEnabled == true)
             {

@@ -20,6 +20,7 @@ using DirectX.Capture;
 using Microsoft.VisualBasic;
 using ScreenShotDemo;
 using System.Drawing.Imaging;
+using System.Threading;
 //using IronPython.Hosting;
 //using IronPython;
 //using Microsoft.Kinect;
@@ -40,7 +41,7 @@ namespace CaptureTest
         private string date_today = DateTime.Now.ToString("yyyy-MM-dd");
         private string launch_time = DateTime.Now.ToString("HH:mm:ss");
         private string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        public MainWindow kinect = new MainWindow();
+        //public MainWindow kinect = new MainWindow();
         public string coordinates;
         
         private string subjectID;
@@ -96,7 +97,7 @@ namespace CaptureTest
         private TextBox txt_recordingID;
         private string startEndtimes;
         //private string refTime;
-        Process myProc;
+        //Process myProc;
 
         public CaptureTest()
         {
@@ -122,15 +123,16 @@ namespace CaptureTest
             //var kinect = new MainWindow();
             // Required for Windows Form Designer support
             //
-            Microsoft.Samples.Kinect.HDFaceBasics.MainWindow kinect_init = new Microsoft.Samples.Kinect.HDFaceBasics.MainWindow();
+            InitializeComponent();
+            MainWindow kinect_init = new MainWindow();
             //System.Threading.Thread kinectThread = new System.Threading.Thread(kinect.InitializeComponent());
-            System.Threading.ThreadStart kinect = new System.Threading.ThreadStart(kinect_init.InitializeComponent);
-            System.Threading.Thread kinectThread = new System.Threading.Thread(kinect);
+            ThreadStart kinect = new ThreadStart( () => kinect_init.Entrance(btnExit) );
+            Thread kinectThread = new Thread(kinect);
             kinectThread.Start();
             //kinect.InitializeComponent();
             //kinect.InitializeHDFace();
             //Console.WriteLine("blah");
-            InitializeComponent();
+            
             Console.WriteLine("Hello");
             //InitializeKinect();
             //System.Collections.ObjectModel.ReadOnlyCollection<VideoCapabilities> blah = new System.Collections.ObjectModel.ReadOnlyCollection<VideoCaptureDevice> GetAvailableVideoCaptureDevices();
@@ -556,9 +558,9 @@ namespace CaptureTest
             AppDomain currentDomain = AppDomain.CurrentDomain;
 
             //MainWindow kinect = new MainWindow();
-            var kinect = new MainWindow();
-            System.Threading.Thread kinectThread = new System.Threading.Thread(kinect.InitializeComponent);
-            kinectThread.Start();
+            //var kinect = new MainWindow();
+            //System.Threading.Thread kinectThread = new System.Threading.Thread(kinect.InitializeComponent);
+            //kinectThread.Start();
             //kinect.InitializeComponent();
             //kinect.InitializeHDFace();
             //Console.WriteLine("blah");
@@ -572,7 +574,7 @@ namespace CaptureTest
         {
             if (capture != null)
                 capture.Stop();
-            kinect.WriteCoords();
+            //kinect.WriteCoords();
             System.Windows.Forms.Application.Exit();
         }
 
@@ -620,7 +622,7 @@ namespace CaptureTest
                 subjectID = System.Text.RegularExpressions.Regex.Replace(regEx.Replace(input_subject, replacement), @"\s+", "_");
 
                 // Creates desktop folder for all files
-
+                
                 new_path = dtopfolder + @"\" + date_today + "_" + subjectID;
 
                 if (!(System.IO.Directory.Exists(new_path)))
@@ -671,7 +673,7 @@ namespace CaptureTest
                 if (btnStart.BackColor == System.Drawing.Color.Red)
                 {
                     // 4-22-2013 removing process for Face Tracking?? doesn't work on Laptop
-                    kinect.WriteCoords();
+                    //kinect.WriteCoords();
                     //kinectThread.Abort();
                     //myProc.CloseMainWindow();
                     // Changed from Kill() to CloseMainWindow() so that coords.txt is generated
