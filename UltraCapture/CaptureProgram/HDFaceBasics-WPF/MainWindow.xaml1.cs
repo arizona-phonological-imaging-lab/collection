@@ -36,7 +36,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// Body frame reader to get body frames
         /// </summary>
         private BodyFrameReader bodyReader = null;
-        public delegate void SetTextCallback(Button text);
+        
         public string coordinates;
 
         //Establishes the tuple to hold the reference coordinates
@@ -97,20 +97,88 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// </summary>
         private string statusText = "Ready To Start Capture";
 
-        //var converter = new System.Windows.Media.BrushConverter();
+        // Multi-threading related vars
+        public delegate void SetTextCallback(TextBox txtbox, string text);
 
-        public Button btnXExit;
+        public delegate void SetColorCallback(TextBox txtbox, string status);
+
+        System.Windows.Forms.Control control = new System.Windows.Forms.Control();
+
+        // vars from Capture Test
+        public TextBox trackingStatus;
+        public TextBox pitchStatus;
+        public TextBox yawStatus;
+        public TextBox rollStatus;
+        public TextBox xStatus;
+        public TextBox yStatus;
+        public TextBox zStatus;
+        public TextBox captureStatus;
+        public Button btnGetRefCoords;
+        public Button btnStartCapture;
 
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
-        public void Entrance(Button btnExit)
+        public void Entrance(TextBox trackingStatus, TextBox pitchStatus, TextBox yawStatus, TextBox rollStatus,
+                                TextBox xStatus, TextBox yStatus, TextBox zStatus, TextBox captureStatus,
+                                Button btnGetRefCoords, Button btnStartCapture)
         {
-            Console.WriteLine(btnExit.ToString());
             //this.InitializeComponent();
             //this.DataContext = this;
-            this.btnXExit = btnExit;
+            this.trackingStatus = trackingStatus;
+            this.pitchStatus = pitchStatus;
+            this.yawStatus = yawStatus;
+            this.rollStatus = rollStatus;
+            this.xStatus = xStatus;
+            this.yStatus = yStatus;
+            this.zStatus = zStatus;
+            this.captureStatus = captureStatus;
+            this.btnGetRefCoords = btnGetRefCoords;
+            this.btnStartCapture = btnStartCapture;
             this.InitializeHDFace();
+        }
+
+        private void ChangeText(TextBox txtbox, string text)
+        {
+            // InvokeRequired required compares the thread ID of the
+            // calling thread to the thread ID of the creating thread.
+            // If these threads are different, it returns true.
+            if (txtbox.InvokeRequired)
+            {
+                SetTextCallback d = new SetTextCallback(ChangeText);
+                
+                control.Invoke(d, new object[] { txtbox, text });
+
+            }
+            else
+            {
+                txtbox.Text = text;
+            }
+        }
+
+        private void ChangeColor(TextBox txtbox, string status)
+        {
+            // InvokeRequired required compares the thread ID of the
+            // calling thread to the thread ID of the creating thread.
+            // If these threads are different, it returns true.
+            if (txtbox.InvokeRequired)
+            {
+                SetColorCallback d = new SetColorCallback(ChangeText);
+                
+                control.Invoke(d, new object[] { txtbox, status });
+
+            }
+            else
+            {
+                if (status == "active")
+                {
+                    txtbox.BackColor = System.Drawing.Color.Red;
+                }
+                else
+                {
+                    txtbox.BackColor = System.Drawing.Color.Green;
+                }
+            }
         }
 
         /// <summary>
@@ -443,23 +511,6 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
 
         }
 
-        private void SetText(Button btnXExit)
-        {
-            // InvokeRequired required compares the thread ID of the
-            // calling thread to the thread ID of the creating thread.
-            // If these threads are different, it returns true.
-            if (this.btnXExit.InvokeRequired)
-            {
-                SetTextCallback d = new SetTextCallback(this.SetText);
-                System.Windows.Forms.Control e = new System.Windows.Forms.Control();
-                e.Invoke(d, new object[] { btnXExit });
-                
-            }
-            else
-            {
-                this.btnXExit.Text = "BOO!";
-            }
-        }
 
         /// <summary>
         /// Sends the new deformed mesh to be drawn
@@ -520,9 +571,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             //coordinates += "°, Roll: " + roll.ToString();
             //coordinates += ")\r\n";
             //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Translation: (Zero point in X-Axis: " + this.currentFaceAlignment.HeadPivotPoint.X.ToString() + " mm, Zero-point in Y-Axis: " + this.currentFaceAlignment.HeadPivotPoint.Y.ToString() + " mm, Distance from Kinect: " + this.currentFaceAlignment.HeadPivotPoint.Z.ToString() + " mm)" + "\r\n";
-            this.SetText(btnXExit);
-            Console.WriteLine("Exit Just turned Red");
-            System.Threading.Thread.Sleep(10000);
+
             //check to see if the reference coordinates have been obtained yet
             if (this.refCoordButton.IsEnabled == false && this.writeCoordsButton.IsEnabled == true)
             {

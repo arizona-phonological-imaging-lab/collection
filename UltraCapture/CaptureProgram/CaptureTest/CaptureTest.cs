@@ -86,6 +86,12 @@ namespace CaptureTest
         private System.Windows.Forms.MenuItem menuItem3;
         private System.Windows.Forms.MenuItem mnuInputType;
         private IContainer components;
+        //Kinect Related objects
+        //private System.Windows.Forms.Button btnRefCoordsLabel;
+        //private System.Windows.Forms.Button btnStartFaceCapture;
+        //private System.Windows.Forms.Button btnWriteCoords;
+        //private System.Windows.Forms.TextBox trackingStatus;
+        //private System.Windows.Forms.Label pitchStatus;
 
         
         //public static ReadOnlyCollection<VideoCaptureDevice> GetAvailableVideoCaptureDevices();
@@ -95,6 +101,18 @@ namespace CaptureTest
         private MenuItem menuRunPostProcess;
         private Label label2;
         private TextBox txt_recordingID;
+        private TextBox trackingStatus;
+        private TextBox pitchStatus;
+        private TextBox yawStatus;
+        private TextBox rollStatus;
+        private Label kinectRegionLabel;
+        private Label label4;
+        private TextBox captureStatus;
+        private TextBox yStatus;
+        private TextBox xStatus;
+        private TextBox zStatus;
+        private Button btnStartCapture;
+        private Button btnGetRefCoords;
         private string startEndtimes;
         //private string refTime;
         //Process myProc;
@@ -126,7 +144,9 @@ namespace CaptureTest
             InitializeComponent();
             MainWindow kinect_init = new MainWindow();
             //System.Threading.Thread kinectThread = new System.Threading.Thread(kinect.InitializeComponent());
-            ThreadStart kinect = new ThreadStart( () => kinect_init.Entrance(btnExit) );
+            ThreadStart kinect = new ThreadStart( () => kinect_init.Entrance(trackingStatus, pitchStatus, yawStatus, rollStatus,
+                                                                                xStatus, yStatus, zStatus, captureStatus,
+                                                                                btnGetRefCoords, btnStartCapture) );
             Thread kinectThread = new Thread(kinect);
             kinectThread.Start();
             //kinect.InitializeComponent();
@@ -252,12 +272,24 @@ namespace CaptureTest
             this.btnCue = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.txt_recordingID = new System.Windows.Forms.TextBox();
+            this.trackingStatus = new System.Windows.Forms.TextBox();
+            this.pitchStatus = new System.Windows.Forms.TextBox();
+            this.yawStatus = new System.Windows.Forms.TextBox();
+            this.rollStatus = new System.Windows.Forms.TextBox();
+            this.kinectRegionLabel = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.captureStatus = new System.Windows.Forms.TextBox();
+            this.yStatus = new System.Windows.Forms.TextBox();
+            this.xStatus = new System.Windows.Forms.TextBox();
+            this.zStatus = new System.Windows.Forms.TextBox();
+            this.btnStartCapture = new System.Windows.Forms.Button();
+            this.btnGetRefCoords = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // txtFilename
             // 
             this.txtFilename.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtFilename.Location = new System.Drawing.Point(139, 390);
+            this.txtFilename.Location = new System.Drawing.Point(391, 390);
             this.txtFilename.Name = "txtFilename";
             this.txtFilename.Size = new System.Drawing.Size(124, 20);
             this.txtFilename.TabIndex = 0;
@@ -266,16 +298,16 @@ namespace CaptureTest
             // label1
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.Location = new System.Drawing.Point(69, 393);
+            this.label1.Location = new System.Drawing.Point(321, 393);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(64, 16);
             this.label1.TabIndex = 1;
             this.label1.Text = "Filename:";
-            //
+            // 
             // btnStart
             // 
             this.btnStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnStart.Location = new System.Drawing.Point(230, 422);//(160, 422);
+            this.btnStart.Location = new System.Drawing.Point(482, 422);
             this.btnStart.Name = "btnStart";
             this.btnStart.Size = new System.Drawing.Size(60, 24);
             this.btnStart.TabIndex = 2;
@@ -285,7 +317,7 @@ namespace CaptureTest
             // btnStop
             // 
             this.btnStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnStop.Location = new System.Drawing.Point(320, 422);//(248, 422);
+            this.btnStop.Location = new System.Drawing.Point(572, 422);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(40, 24);
             this.btnStop.TabIndex = 3;
@@ -295,7 +327,7 @@ namespace CaptureTest
             // btnExit
             // 
             this.btnExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnExit.Location = new System.Drawing.Point(376, 422);
+            this.btnExit.Location = new System.Drawing.Point(628, 422);
             this.btnExit.Name = "btnExit";
             this.btnExit.Size = new System.Drawing.Size(120, 24);
             this.btnExit.TabIndex = 5;
@@ -487,19 +519,19 @@ namespace CaptureTest
             // 
             // panelVideo
             // 
-            this.panelVideo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.panelVideo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panelVideo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panelVideo.Location = new System.Drawing.Point(8, 8);
+            this.panelVideo.Location = new System.Drawing.Point(324, 8);
             this.panelVideo.Name = "panelVideo";
-            this.panelVideo.Size = new System.Drawing.Size(488, 366);
+            this.panelVideo.Size = new System.Drawing.Size(420, 366);
             this.panelVideo.TabIndex = 6;
             // 
             // btnCue
             // 
             this.btnCue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCue.Location = new System.Drawing.Point(36, 422);
+            this.btnCue.Location = new System.Drawing.Point(324, 419);
             this.btnCue.Name = "btnCue";
             this.btnCue.Size = new System.Drawing.Size(80, 24);
             this.btnCue.TabIndex = 8;
@@ -509,7 +541,7 @@ namespace CaptureTest
             // label2
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.label2.Location = new System.Drawing.Point(313, 390);
+            this.label2.Location = new System.Drawing.Point(565, 390);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(77, 17);
             this.label2.TabIndex = 11;
@@ -518,17 +550,157 @@ namespace CaptureTest
             // txt_recordingID
             // 
             this.txt_recordingID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.txt_recordingID.Location = new System.Drawing.Point(393, 387);
+            this.txt_recordingID.Location = new System.Drawing.Point(645, 387);
             this.txt_recordingID.Name = "txt_recordingID";
             this.txt_recordingID.Size = new System.Drawing.Size(103, 20);
             this.txt_recordingID.TabIndex = 10;
             this.txt_recordingID.Text = "000123";
             // 
+            // trackingStatus
+            // 
+            this.trackingStatus.BackColor = System.Drawing.Color.Red;
+            this.trackingStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 26.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.trackingStatus.Location = new System.Drawing.Point(9, 66);
+            this.trackingStatus.Name = "trackingStatus";
+            this.trackingStatus.Size = new System.Drawing.Size(306, 47);
+            this.trackingStatus.TabIndex = 12;
+            this.trackingStatus.Text = "NOT TRACKING";
+            this.trackingStatus.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.trackingStatus.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            // 
+            // pitchStatus
+            // 
+            this.pitchStatus.BackColor = System.Drawing.Color.Red;
+            this.pitchStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.pitchStatus.Location = new System.Drawing.Point(9, 174);
+            this.pitchStatus.Name = "pitchStatus";
+            this.pitchStatus.Size = new System.Drawing.Size(100, 35);
+            this.pitchStatus.TabIndex = 13;
+            this.pitchStatus.Text = "PITCH";
+            this.pitchStatus.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // yawStatus
+            // 
+            this.yawStatus.BackColor = System.Drawing.Color.Red;
+            this.yawStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.yawStatus.Location = new System.Drawing.Point(125, 174);
+            this.yawStatus.Name = "yawStatus";
+            this.yawStatus.Size = new System.Drawing.Size(83, 35);
+            this.yawStatus.TabIndex = 14;
+            this.yawStatus.Text = "YAW";
+            this.yawStatus.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // rollStatus
+            // 
+            this.rollStatus.BackColor = System.Drawing.Color.Red;
+            this.rollStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rollStatus.Location = new System.Drawing.Point(223, 174);
+            this.rollStatus.Name = "rollStatus";
+            this.rollStatus.Size = new System.Drawing.Size(92, 35);
+            this.rollStatus.TabIndex = 15;
+            this.rollStatus.Text = "ROLL";
+            this.rollStatus.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // kinectRegionLabel
+            // 
+            this.kinectRegionLabel.AutoSize = true;
+            this.kinectRegionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.kinectRegionLabel.Location = new System.Drawing.Point(43, 34);
+            this.kinectRegionLabel.Name = "kinectRegionLabel";
+            this.kinectRegionLabel.Size = new System.Drawing.Size(218, 29);
+            this.kinectRegionLabel.TabIndex = 19;
+            this.kinectRegionLabel.Text = "Kinect Notifications";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label4.Location = new System.Drawing.Point(65, 331);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(192, 25);
+            this.label4.TabIndex = 21;
+            this.label4.Text = "Capture Notifications";
+            // 
+            // captureStatus
+            // 
+            this.captureStatus.BackColor = System.Drawing.Color.Red;
+            this.captureStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.captureStatus.Location = new System.Drawing.Point(58, 408);
+            this.captureStatus.Name = "captureStatus";
+            this.captureStatus.Size = new System.Drawing.Size(214, 35);
+            this.captureStatus.TabIndex = 25;
+            this.captureStatus.Text = "NOT CAPTURING";
+            this.captureStatus.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // yStatus
+            // 
+            this.yStatus.BackColor = System.Drawing.Color.Red;
+            this.yStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.yStatus.Location = new System.Drawing.Point(9, 232);
+            this.yStatus.Name = "yStatus";
+            this.yStatus.Size = new System.Drawing.Size(122, 35);
+            this.yStatus.TabIndex = 26;
+            this.yStatus.Text = "Y-ALIGN";
+            this.yStatus.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // xStatus
+            // 
+            this.xStatus.BackColor = System.Drawing.Color.Red;
+            this.xStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.xStatus.Location = new System.Drawing.Point(193, 232);
+            this.xStatus.Name = "xStatus";
+            this.xStatus.Size = new System.Drawing.Size(122, 35);
+            this.xStatus.TabIndex = 27;
+            this.xStatus.Text = "X-ALIGN";
+            this.xStatus.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // zStatus
+            // 
+            this.zStatus.BackColor = System.Drawing.Color.Red;
+            this.zStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.zStatus.Location = new System.Drawing.Point(104, 282);
+            this.zStatus.Name = "zStatus";
+            this.zStatus.Size = new System.Drawing.Size(122, 35);
+            this.zStatus.TabIndex = 28;
+            this.zStatus.Text = "Z-ALIGN";
+            this.zStatus.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // btnStartCapture
+            // 
+            this.btnStartCapture.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnStartCapture.Location = new System.Drawing.Point(105, 364);
+            this.btnStartCapture.Name = "btnStartCapture";
+            this.btnStartCapture.Size = new System.Drawing.Size(119, 33);
+            this.btnStartCapture.TabIndex = 29;
+            this.btnStartCapture.Text = "Start Capture";
+            this.btnStartCapture.UseVisualStyleBackColor = true;
+            // 
+            // btnGetRefCoords
+            // 
+            this.btnGetRefCoords.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnGetRefCoords.Location = new System.Drawing.Point(48, 128);
+            this.btnGetRefCoords.Name = "btnGetRefCoords";
+            this.btnGetRefCoords.Size = new System.Drawing.Size(238, 33);
+            this.btnGetRefCoords.TabIndex = 30;
+            this.btnGetRefCoords.Text = "Take Reference Coordinates";
+            this.btnGetRefCoords.UseVisualStyleBackColor = true;
+            // 
             // CaptureTest
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-            this.ClientSize = new System.Drawing.Size(504, 455);
-            //this.ClientSize = new System.Drawing.Size(800, 475);
+            this.ClientSize = new System.Drawing.Size(756, 455);
+            this.Controls.Add(this.btnGetRefCoords);
+            this.Controls.Add(this.btnStartCapture);
+            this.Controls.Add(this.zStatus);
+            this.Controls.Add(this.xStatus);
+            this.Controls.Add(this.yStatus);
+            this.Controls.Add(this.captureStatus);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.kinectRegionLabel);
+            this.Controls.Add(this.rollStatus);
+            this.Controls.Add(this.yawStatus);
+            this.Controls.Add(this.pitchStatus);
+            this.Controls.Add(this.trackingStatus);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.txt_recordingID);
             this.Controls.Add(this.btnCue);
@@ -544,6 +716,7 @@ namespace CaptureTest
             this.Load += new System.EventHandler(this.CaptureTest_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
         #endregion
 
@@ -1525,6 +1698,16 @@ namespace CaptureTest
             {
                 System.Windows.Forms.MessageBox.Show("Please STOP recording before Post-Processing");
             }
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
         }        
     }
 }
