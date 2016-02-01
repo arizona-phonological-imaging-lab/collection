@@ -48,6 +48,7 @@ namespace CaptureTest
         
         private Capture capture = null;
         private Filters filters = new Filters();
+        MainWindow kinect_init = new MainWindow();
         //private System.Object blah = new Object();
         //private System.Windows.Media.CaptureDevice blah = new System.Windows.Media.CaptureDevice();
 
@@ -142,19 +143,19 @@ namespace CaptureTest
             // Required for Windows Form Designer support
             //
             InitializeComponent();
-            MainWindow kinect_init = new MainWindow();
-            //System.Threading.Thread kinectThread = new System.Threading.Thread(kinect.InitializeComponent());
-            ThreadStart kinect = new ThreadStart( () => kinect_init.Entrance(trackingStatus, pitchStatus, yawStatus, rollStatus,
-                                                                                xStatus, yStatus, zStatus, captureStatus,
-                                                                                btnGetRefCoords, btnStartCapture) );
-            Thread kinectThread = new Thread(kinect);
-            kinectThread.Start();
+            //MainWindow kinect_init = new MainWindow();
+            ////System.Threading.Thread kinectThread = new System.Threading.Thread(kinect.InitializeComponent());
+            //ThreadStart kinect = new ThreadStart( () => kinect_init.Entrance(trackingStatus, pitchStatus, yawStatus, rollStatus,
+            //                                                                    xStatus, yStatus, zStatus, captureStatus,
+            //                                                                    btnGetRefCoords, btnStartCapture, this) );
+            //Thread kinectThread = new Thread(kinect);
+            //kinectThread.Start();
+
+            
             //kinect.InitializeComponent();
             //kinect.InitializeHDFace();
-            //Console.WriteLine("blah");
-            
-            Console.WriteLine("Hello");
-            //InitializeKinect();
+
+            InitializeKinect();
             //System.Collections.ObjectModel.ReadOnlyCollection<VideoCapabilities> blah = new System.Collections.ObjectModel.ReadOnlyCollection<VideoCaptureDevice> GetAvailableVideoCaptureDevices();
             //System.Windows.DependencyObject
             // start 2013-02-19 __ZC__
@@ -605,7 +606,7 @@ namespace CaptureTest
             // 
             this.kinectRegionLabel.AutoSize = true;
             this.kinectRegionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.kinectRegionLabel.Location = new System.Drawing.Point(43, 34);
+            this.kinectRegionLabel.Location = new System.Drawing.Point(47, 29);
             this.kinectRegionLabel.Name = "kinectRegionLabel";
             this.kinectRegionLabel.Size = new System.Drawing.Size(218, 29);
             this.kinectRegionLabel.TabIndex = 19;
@@ -674,16 +675,19 @@ namespace CaptureTest
             this.btnStartCapture.TabIndex = 29;
             this.btnStartCapture.Text = "Start Capture";
             this.btnStartCapture.UseVisualStyleBackColor = true;
+            this.btnStartCapture.Click += new System.EventHandler(this.btnStartCapture_Click);
             // 
             // btnGetRefCoords
             // 
             this.btnGetRefCoords.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnGetRefCoords.Location = new System.Drawing.Point(48, 128);
+            this.btnGetRefCoords.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnGetRefCoords.Location = new System.Drawing.Point(43, 128);
             this.btnGetRefCoords.Name = "btnGetRefCoords";
             this.btnGetRefCoords.Size = new System.Drawing.Size(238, 33);
             this.btnGetRefCoords.TabIndex = 30;
             this.btnGetRefCoords.Text = "Take Reference Coordinates";
             this.btnGetRefCoords.UseVisualStyleBackColor = true;
+            this.btnGetRefCoords.Click += new System.EventHandler(this.btnGetRefCoords_Click);
             // 
             // CaptureTest
             // 
@@ -743,10 +747,22 @@ namespace CaptureTest
             
 		}
 
+        public void InitializeKinect()
+        {
+            //MainWindow kinect_init = new MainWindow();
+            //System.Threading.Thread kinectThread = new System.Threading.Thread(kinect.InitializeComponent());
+            ThreadStart kinect = new ThreadStart( () => kinect_init.Entrance(trackingStatus, pitchStatus, yawStatus, rollStatus,
+                                                                                xStatus, yStatus, zStatus, captureStatus,
+                                                                                btnGetRefCoords, btnStartCapture, btnStart, this) );
+            Thread kinectThread = new Thread(kinect);
+            kinectThread.Start();
+        }
+
         private void btnExit_Click(object sender, System.EventArgs e)
         {
             if (capture != null)
                 capture.Stop();
+            
             //kinect.WriteCoords();
             System.Windows.Forms.Application.Exit();
         }
@@ -780,6 +796,7 @@ namespace CaptureTest
         {
             try
             {
+                btnStart.Enabled = false;
                 btnStart.BackColor = System.Drawing.Color.Red;
                 // start 2013-02-19 __ZC__
 
@@ -822,6 +839,7 @@ namespace CaptureTest
                 date1 = DateTime.Now;
                 startEndtimes += "Before start command: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + "\r\n";
 
+                btnStart.Enabled = false;
                 capture.Start();
 
                 date1 = DateTime.Now;
@@ -829,7 +847,7 @@ namespace CaptureTest
 
 
                 btnCue.Enabled = false;
-                btnStart.Enabled = true;
+                //btnStart.Enabled = true;
             }
             catch (Exception ex)
             {
@@ -858,7 +876,7 @@ namespace CaptureTest
                     capture.Stop();
                     date1 = DateTime.Now;
                     startEndtimes += "Stop time:            " + date1.ToString("yyyyyyyyMMddHHmmssfff") + "\r\n";
-
+                    btnStop.Enabled = false;
                     System.IO.File.WriteAllText((new_path + @"\" + "vidTimes.txt"), startEndtimes);
 
                     // moves the coords.txt from desktop to subjectID folder
@@ -890,6 +908,18 @@ namespace CaptureTest
                 System.Windows.Forms.MessageBox.Show(ex.Message + "\n\n" + ex.ToString());
             }
         }
+
+        private void btnStartCapture_Click(object sender, System.EventArgs e)
+        {
+            kinect_init.StartCapture();
+        }
+
+        private void btnGetRefCoords_Click(object sender, System.EventArgs e)
+        {
+            kinect_init.RefCoordCapture();
+        }
+
+
 
         private void updateMenu()
         {

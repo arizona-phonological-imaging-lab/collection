@@ -100,7 +100,13 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         // Multi-threading related vars
         public delegate void SetTextCallback(TextBox txtbox, string text);
 
-        public delegate void SetColorCallback(TextBox txtbox, string status);
+        public delegate void SetTextColorCallback(Button btn, string color);
+
+        public delegate void SetColorCallback(TextBox txtbox, string color);
+
+        public delegate void SetEnableCallback(Button btn, string status);
+
+        public delegate bool CheckEnableCallback(Button btn);
 
         System.Windows.Forms.Control control = new System.Windows.Forms.Control();
 
@@ -115,13 +121,14 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         public TextBox captureStatus;
         public Button btnGetRefCoords;
         public Button btnStartCapture;
+        public Button btnStart;
 
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
         public void Entrance(TextBox trackingStatus, TextBox pitchStatus, TextBox yawStatus, TextBox rollStatus,
                                 TextBox xStatus, TextBox yStatus, TextBox zStatus, TextBox captureStatus,
-                                Button btnGetRefCoords, Button btnStartCapture)
+                                Button btnGetRefCoords, Button btnStartCapture, Button btnStart, Control control)
         {
             //this.InitializeComponent();
             //this.DataContext = this;
@@ -135,7 +142,10 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             this.captureStatus = captureStatus;
             this.btnGetRefCoords = btnGetRefCoords;
             this.btnStartCapture = btnStartCapture;
+            this.btnStart = btnStart;
+            this.control = control;
             this.InitializeHDFace();
+            
         }
 
         private void ChangeText(TextBox txtbox, string text)
@@ -156,21 +166,46 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             }
         }
 
-        private void ChangeColor(TextBox txtbox, string status)
+        private void ChangeTextColor(Button btn, string color)
+        {
+            // InvokeRequired required compares the thread ID of the
+            // calling thread to the thread ID of the creating thread.
+            // If these threads are different, it returns true.
+            if (btn.InvokeRequired)
+            {
+                SetTextColorCallback d = new SetTextColorCallback(ChangeTextColor);
+
+                control.Invoke(d, new object[] { btn, color });
+
+            }
+            else
+            {
+                if (color == "grey" || color == "gray")
+                {
+                    btn.ForeColor = System.Drawing.SystemColors.GrayText;
+                }
+                else
+                {
+                    btn.ForeColor = System.Drawing.SystemColors.ControlText;
+                }
+            }
+        }
+
+        private void ChangeColor(TextBox txtbox, string color)
         {
             // InvokeRequired required compares the thread ID of the
             // calling thread to the thread ID of the creating thread.
             // If these threads are different, it returns true.
             if (txtbox.InvokeRequired)
             {
-                SetColorCallback d = new SetColorCallback(ChangeText);
+                SetColorCallback d = new SetColorCallback(ChangeColor);
                 
-                control.Invoke(d, new object[] { txtbox, status });
+                control.Invoke(d, new object[] { txtbox, color });
 
             }
             else
             {
-                if (status == "active")
+                if (color == "red")
                 {
                     txtbox.BackColor = System.Drawing.Color.Red;
                 }
@@ -180,6 +215,54 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
                 }
             }
         }
+        private void SetEnable(Button btn, string status)
+        {
+            // InvokeRequired required compares the thread ID of the
+            // calling thread to the thread ID of the creating thread.
+            // If these threads are different, it returns true.
+            if (btn.InvokeRequired)
+            {
+                SetEnableCallback d = new SetEnableCallback(SetEnable);
+
+                control.Invoke(d, new object[] { btn, status });
+
+            }
+            else
+            {
+
+                if (status == "enable")
+                {
+                    btn.Enabled = true;
+                }
+                else
+                {
+                    btn.Enabled = false;
+                }
+            }
+        }
+
+        private bool CheckEnable(Button btn)
+        {
+            // InvokeRequired required compares the thread ID of the
+            // calling thread to the thread ID of the creating thread.
+            // If these threads are different, it returns true.
+            if (btn.InvokeRequired)
+            {
+                CheckEnableCallback d = new CheckEnableCallback(CheckEnable);
+
+                control.Invoke(d, new object[] { btn });
+
+                return true;
+
+            }
+            else
+            {
+
+                return btn.Enabled;
+            }
+        }
+
+
 
         /// <summary>
         /// INotifyPropertyChangedPropertyChanged event to allow window controls to bind to changeable data
@@ -347,57 +430,59 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
 
             if ((status & FaceModelBuilderCollectionStatus.FrontViewFramesNeeded) != 0)
             {
-                this.forwardNeeded.Opacity = 100;
-                this.forwardNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");//red
+                this.ChangeText(this.captureStatus, "Look FORWARD");
+                //this.forwardNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");//red
                 res = "FrontViewFramesNeeded";
                 return res;
             }
-            else
-            {
-                this.forwardNeeded.Opacity = 50;
-                this.forwardNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
-            }
+            //else
+            //{
+            //    this.forwardNeeded.Opacity = 50;
+            //    this.forwardNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
+            //}
 
             if ((status & FaceModelBuilderCollectionStatus.LeftViewsNeeded) != 0)
             {
-                this.leftNeeded.Opacity = 100;
-                this.leftNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");//red
+                this.ChangeText(this.captureStatus, "Look LEFT");
+                //this.leftNeeded.Opacity = 100;
+                //this.leftNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");//red
                 res = "LeftViewsNeeded";
                 return res;
             }
-            else
-            {
-                this.leftNeeded.Opacity = 50;
-                this.leftNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
-            }
+            //else
+            //{
+            //    this.leftNeeded.Opacity = 50;
+            //    this.leftNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
+            //}
 
             if ((status & FaceModelBuilderCollectionStatus.RightViewsNeeded) != 0)
             {
-                
-                this.rightNeeded.Opacity = 100;
-                this.rightNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");//red
+
+                this.ChangeText(this.captureStatus, "Look RIGHT");
+                //this.rightNeeded.Opacity = 100;
+                //this.rightNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");//red
                 res = "RightViewsNeeded";
                 return res;
             }
-            else
-            {
-                this.rightNeeded.Opacity = 50;
-                this.rightNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
-            }
+            //else
+            //{
+            //    this.rightNeeded.Opacity = 50;
+            //    this.rightNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
+            //}
 
             if ((status & FaceModelBuilderCollectionStatus.TiltedUpViewsNeeded) != 0)
             {
-                
-                this.upNeeded.Opacity = 100;
-                this.upNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");//red
+                this.ChangeText(this.captureStatus, "Look UP");
+                //this.upNeeded.Opacity = 100;
+                //this.upNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");//red
                 res = "TiltedUpViewsNeeded";
                 return res;
             }
-            else
-            {
-                this.upNeeded.Opacity = 50;
-                this.upNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
-            }
+            //else
+            //{
+            //    this.upNeeded.Opacity = 50;
+            //    this.upNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
+            //}
 
             if ((status & FaceModelBuilderCollectionStatus.MoreFramesNeeded) != 0)
             {
@@ -407,11 +492,13 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
 
             if ((status & FaceModelBuilderCollectionStatus.Complete) != 0)
             {
-                this.forwardNeeded.Opacity = 0;
-                this.leftNeeded.Opacity = 0;
-                this.rightNeeded.Opacity = 0;
-                this.upNeeded.Opacity = 0;
-                this.captured.Opacity = 100;
+                this.ChangeText(this.captureStatus, "CAPTURED");
+                this.ChangeColor(this.captureStatus, "green");
+                //this.forwardNeeded.Opacity = 0;
+                //this.leftNeeded.Opacity = 0;
+                //this.rightNeeded.Opacity = 0;
+                //this.upNeeded.Opacity = 0;
+                //this.captured.Opacity = 100;
                 res = "Complete";
                 return res;
             }
@@ -573,7 +660,10 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Translation: (Zero point in X-Axis: " + this.currentFaceAlignment.HeadPivotPoint.X.ToString() + " mm, Zero-point in Y-Axis: " + this.currentFaceAlignment.HeadPivotPoint.Y.ToString() + " mm, Distance from Kinect: " + this.currentFaceAlignment.HeadPivotPoint.Z.ToString() + " mm)" + "\r\n";
 
             //check to see if the reference coordinates have been obtained yet
-            if (this.refCoordButton.IsEnabled == false && this.writeCoordsButton.IsEnabled == true)
+
+            //if (this.refCoordButton.IsEnabled == false && this.writeCoordsButton.IsEnabled == true)
+            Console.WriteLine("Before First Cross-Thread Check");
+            if (this.CheckEnable(this.btnStart) == false)
             {
                 //Obtain Coordinates
                 var coords = this.GetCoords();
@@ -601,41 +691,51 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
                 //}
                 
                 //alert user if pitch is out of alignment
-                if ((pitch - refCoords.Item1) > 10 || (pitch - refCoords.Item1) < -10)
+                if ((pitch - refCoords.Item1) > 3 || (pitch - refCoords.Item1) < -3)
                 {
-                    this.pitchBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");
+                    this.ChangeColor(pitchStatus, "red");
+                    //this.pitchBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");
                 }
                 else
                 {
-                    this.pitchBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF0AA60A");
+                    this.ChangeColor(pitchStatus, "green");
+                    //this.pitchBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF0AA60A");
                 }
 
                 //alert user if yaw is out of alignment
-                if ((yaw - refCoords.Item2) > 10 || (yaw - refCoords.Item2) < -10)
+                if ((yaw - refCoords.Item2) > 3 || (yaw - refCoords.Item2) < -3)
                 {
-                    this.yawBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");
+                    this.ChangeColor(yawStatus, "red");
+                    //this.yawBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");
                 }
                 else
                 {
-                    this.yawBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF0AA60A");
+                    this.ChangeColor(yawStatus, "green");
+                    //this.yawBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF0AA60A");
                 }
 
                 //alert user if roll is out of alignment
-                if ((roll - refCoords.Item3) > 10 || (roll - refCoords.Item3) < -10)
+                if ((roll - refCoords.Item3) > 3 || (roll - refCoords.Item3) < -3)
                 {
-                    this.rollBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");
+                    this.ChangeColor(rollStatus, "red");
+                    //this.rollBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");
                 }
                 else
                 {
-                    this.rollBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF0AA60A");
+                    this.ChangeColor(rollStatus, "green");
+                    //this.rollBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF0AA60A");
                 }
             }
+            Console.WriteLine("After First Cross-Thread Check");
 
             if (this.CurrentTrackingId != 0 || this.PastTrackingId != 0)
             {
                 //this.PastTrackingId = this.CurrentTrackingId;
-                this.trackLabel.Text = "TRACKING";
-                this.trackLabel.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF0AA60A");
+                Console.WriteLine("Frame has arrived!");
+                this.ChangeText(trackingStatus, "TRACKING");
+                this.ChangeColor(trackingStatus, "green");
+                //this.trackLabel.Text = "TRACKING";
+                //this.trackLabel.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF0AA60A");
             }
             //else if (this.CurrentTrackingId == 0 && this.PastTrackingId == 0)
             //{
@@ -684,7 +784,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// </summary>
         /// <param name="sender">object sending the event</param>
         /// <param name="e">event arguments</param>
-        private void StartCapture_Button_Click(object sender, RoutedEventArgs e)
+        public void StartCapture_Button_Click(object sender, RoutedEventArgs e)
         {
             this.StartCapture();
         }
@@ -694,7 +794,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// </summary>
         /// <param name="sender">object sending the event</param>
         /// <param name="e">event arguments</param>
-        private void RefCoordCapture_Button_Click(object sender, RoutedEventArgs e)
+        public void RefCoordCapture_Button_Click(object sender, RoutedEventArgs e)
         {
             this.RefCoordCapture();
             this.refCoordButton.IsEnabled = false;
@@ -717,8 +817,8 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// </summary>
         public void Dispose()
         {
-            string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
+            //string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            //System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
 
             //this.InternalDispose();
             GC.SuppressFinalize(this);
@@ -804,8 +904,12 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
                 // Also ignore this frame if face tracking failed.
                 if (frame == null || !frame.IsFaceTracked)
                 {
-                    this.trackLabel.Text = "NOT TRACKING";
-                    this.trackLabel.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707"); //Red
+                    Console.WriteLine("Before 2nd Call.");
+                    this.ChangeText(this.trackingStatus, "NOT TRACKING");
+                    this.ChangeColor(this.trackingStatus, "red");
+                    Console.WriteLine("After 2nd CAll");
+                    //this.trackLabel.Text = "NOT TRACKING";
+                    //this.trackLabel.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707"); //Red
 
                     //date1 = DateTime.Now;
                     //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Rotation:    (Pitch: NaN";
@@ -828,7 +932,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// <summary>
         /// Obtain neutral coordinates
         /// </summary>
-        private void RefCoordCapture()
+        public void RefCoordCapture()
         {
             //date1 = DateTime.Now;
             refCoords = GetCoords();
@@ -846,7 +950,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// <summary>
         /// Start a face capture operation
         /// </summary>
-        private void StartCapture()
+        public void StartCapture()
         {
             this.StopFaceCapture();
 
@@ -857,10 +961,10 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             this.faceModelBuilder.BeginFaceDataCollection();
 
             this.faceModelBuilder.CollectionCompleted += this.HdFaceBuilder_CollectionCompleted;
-            this.forwardNeeded.Opacity = 25;
-            this.upNeeded.Opacity = 25;
-            this.leftNeeded.Opacity = 25;
-            this.rightNeeded.Opacity = 25;
+            //this.forwardNeeded.Opacity = 25;
+            //this.upNeeded.Opacity = 25;
+            //this.leftNeeded.Opacity = 25;
+            //this.rightNeeded.Opacity = 25;
         }
 
         /// <summary>
@@ -921,11 +1025,11 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             //System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
 
             //this.InternalDispose();
-            this.forwardNeeded.Opacity = 0;
-            this.leftNeeded.Opacity = 0;
-            this.rightNeeded.Opacity = 0;
-            this.upNeeded.Opacity = 0;
-            this.captured.Opacity = 100;
+            //this.forwardNeeded.Opacity = 0;
+            //this.leftNeeded.Opacity = 0;
+            //this.rightNeeded.Opacity = 0;
+            //this.upNeeded.Opacity = 0;
+            //this.captured.Opacity = 100;
             GC.SuppressFinalize(this);
 
             this.CurrentBuilderStatus = "Capture Complete";
