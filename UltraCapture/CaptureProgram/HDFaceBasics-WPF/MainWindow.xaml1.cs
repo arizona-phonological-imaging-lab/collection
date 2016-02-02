@@ -37,7 +37,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// </summary>
         private BodyFrameReader bodyReader = null;
         
-        public string coordinates;
+        public System.Text.StringBuilder coordinates;
 
         //Establishes the tuple to hold the reference coordinates
         public Tuple<double, double, double, string, string, string, string> refCoords;
@@ -122,13 +122,16 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         public Button btnGetRefCoords;
         public Button btnStartCapture;
         public Button btnStart;
+        public Button btnStop;
+        public string destinationDir;
 
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
         public void Entrance(TextBox trackingStatus, TextBox pitchStatus, TextBox yawStatus, TextBox rollStatus,
                                 TextBox xStatus, TextBox yStatus, TextBox zStatus, TextBox captureStatus,
-                                Button btnGetRefCoords, Button btnStartCapture, Button btnStart, Control control)
+                                Button btnGetRefCoords, Button btnStartCapture, Button btnStart, Button btnStop,
+                                string destinationDir, Control control)
         {
             //this.InitializeComponent();
             //this.DataContext = this;
@@ -143,6 +146,8 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             this.btnGetRefCoords = btnGetRefCoords;
             this.btnStartCapture = btnStartCapture;
             this.btnStart = btnStart;
+            this.btnStop = btnStop;
+            this.destinationDir = destinationDir;
             this.control = control;
             this.InitializeHDFace();
             
@@ -486,6 +491,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
 
             if ((status & FaceModelBuilderCollectionStatus.MoreFramesNeeded) != 0)
             {
+                Console.WriteLine("MoreFramesNeeded");
                 res = "TiltedUpViewsNeeded";
                 return res;
             }
@@ -535,11 +541,9 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             this.CurrentBuilderStatus = "Ready To Start Capture";
 
             this.sensor = KinectSensor.GetDefault();
-            //Console.WriteLine(this.sensor.IsAvailable);
             this.bodySource = this.sensor.BodyFrameSource;
             this.bodyReader = this.bodySource.OpenReader();
             this.bodyReader.FrameArrived += this.BodyReader_FrameArrived;
-            Console.WriteLine("Inside Kinect Code");
             this.highDefinitionFaceFrameSource = new HighDefinitionFaceFrameSource(this.sensor);
             this.highDefinitionFaceFrameSource.TrackingIdLost += this.HdFaceSource_TrackingIdLost;
 
@@ -661,9 +665,8 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
 
             //check to see if the reference coordinates have been obtained yet
 
-            //if (this.refCoordButton.IsEnabled == false && this.writeCoordsButton.IsEnabled == true)
-            Console.WriteLine("Before First Cross-Thread Check");
-            if (this.CheckEnable(this.btnStart) == false)
+            //if (this.refCoordButton.IsEnabled == false && this.writeCoordsButton.IsEnabled == true
+            if (this.CheckEnable(this.btnStart) == false && this.CheckEnable(this.btnStop) == true )
             {
                 //Obtain Coordinates
                 var coords = this.GetCoords();
@@ -726,12 +729,11 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
                     //this.rollBox.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FF0AA60A");
                 }
             }
-            Console.WriteLine("After First Cross-Thread Check");
 
             if (this.CurrentTrackingId != 0 || this.PastTrackingId != 0)
             {
                 //this.PastTrackingId = this.CurrentTrackingId;
-                Console.WriteLine("Frame has arrived!");
+                //Console.WriteLine("Frame has arrived!");
                 this.ChangeText(trackingStatus, "TRACKING");
                 this.ChangeColor(trackingStatus, "green");
                 //this.trackLabel.Text = "TRACKING";
@@ -808,7 +810,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         private void WriteCoords_Button_Click(object sender, RoutedEventArgs e)
         {
             this.WriteCoords();
-            writeCoordsButton.IsEnabled = false;
+            //writeCoordsButton.IsEnabled = false;
             //this.refCoordButton.IsEnabled = false;
         }
 
@@ -904,10 +906,10 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
                 // Also ignore this frame if face tracking failed.
                 if (frame == null || !frame.IsFaceTracked)
                 {
-                    Console.WriteLine("Before 2nd Call.");
+
                     this.ChangeText(this.trackingStatus, "NOT TRACKING");
                     this.ChangeColor(this.trackingStatus, "red");
-                    Console.WriteLine("After 2nd CAll");
+
                     //this.trackLabel.Text = "NOT TRACKING";
                     //this.trackLabel.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707"); //Red
 
@@ -945,6 +947,9 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
 
             string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             System.IO.File.WriteAllText(dtopfolder + @"\ref_coords.txt", ref_coords);
+
+            this.ChangeTextColor(btnGetRefCoords, "gray");
+            this.SetEnable(btnGetRefCoords, "disable");
         }
 
         /// <summary>
@@ -952,6 +957,9 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// </summary>
         public void StartCapture()
         {
+            this.ChangeTextColor(btnStartCapture, "gray");
+            this.SetEnable(btnStartCapture, "disable");
+
             this.StopFaceCapture();
 
             this.faceModelBuilder = null;
@@ -972,27 +980,44 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// </summary>
         public void WriteCoords()
         {
-            if (writeCoordsButton.IsEnabled == true)
+            System.Windows.Forms.MessageBox.Show("Recording Stopped\nWill begin writing Coords file\nPlease click 'OK' and hold.");
+            //if (writeCoordsButton.IsEnabled == true)
+            //{
+            string coordstring;
+            while (q.Count > 0)
             {
-                while (q.Count > 0)
-                {
-                    var coords = q.Dequeue();
-                    //double pitch = coords.Item1;
-                    //double yaw = coords.Item2;
-                    //double roll = coords.Item3;
-                    //string transX = coords.Item4;
-                    //string transY = coords.Item5;
-                    //string transZ = coords.Item6;
-                    //string date = coords.Item7;
-                    coordinates += "Time: " + coords.Item7 + " Rotation:    (Pitch: " + coords.Item1.ToString() +
-                                    "°, Yaw: " + coords.Item2.ToString() + "°, Roll: " + coords.Item3.ToString() + ")\r\n" +
-                                    "Time: " + coords.Item7 + " Translation: (Zero point in X-Axis: " + coords.Item4 +
-                                    " mm, Zero-point in Y-Axis: " + coords.Item5 + " mm, Distance from Kinect: " +
-                                    coords.Item6 + " mm)" + "\r\n";
-                }
+                var coords = q.Dequeue();
+                //double pitch = coords.Item1;
+                //double yaw = coords.Item2;
+                //double roll = coords.Item3;
+                //string transX = coords.Item4;
+                //string transY = coords.Item5;
+                //string transZ = coords.Item6;
+                //string date = coords.Item7;
+                coordinates.Append("Time: " + coords.Item7 + " Rotation:    (Pitch: " + coords.Item1.ToString() +
+                                "°, Yaw: " + coords.Item2.ToString() + "°, Roll: " + coords.Item3.ToString() + ")\r\n" +
+                                "Time: " + coords.Item7 + " Translation: (Zero point in X-Axis: " + coords.Item4 +
+                                " mm, Zero-point in Y-Axis: " + coords.Item5 + " mm, Distance from Kinect: " +
+                                coords.Item6 + " mm)" + "\r\n");
             }
+            //}
+            coordstring = coordinates.ToString();
             string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
+            System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordstring );
+            System.Windows.Forms.MessageBox.Show("Completed writing coords file, carry on.");
+            // Move KinectCoordinate file and ReferenceCoordinateFile
+            string coords_file = "coords.txt";
+            string ref_coords_file = "ref_coords.txt";
+
+            string coordSourceFile = System.IO.Path.Combine(dtopfolder, coords_file);
+            string coordDestFile = System.IO.Path.Combine(destinationDir, coords_file);
+            System.IO.File.Move(coordSourceFile,
+                coordDestFile);
+
+            string refSourceFile = System.IO.Path.Combine(dtopfolder, ref_coords_file);
+            string refDestFile = System.IO.Path.Combine(destinationDir, ref_coords_file);
+           System.IO.File.Move(refSourceFile,
+                refDestFile);
         }
 
         /// <summary>

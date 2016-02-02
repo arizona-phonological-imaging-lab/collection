@@ -753,7 +753,8 @@ namespace CaptureTest
             //System.Threading.Thread kinectThread = new System.Threading.Thread(kinect.InitializeComponent());
             ThreadStart kinect = new ThreadStart( () => kinect_init.Entrance(trackingStatus, pitchStatus, yawStatus, rollStatus,
                                                                                 xStatus, yStatus, zStatus, captureStatus,
-                                                                                btnGetRefCoords, btnStartCapture, btnStart, this) );
+                                                                                btnGetRefCoords, btnStartCapture, btnStart, btnStop,
+                                                                                new_path, this) );
             Thread kinectThread = new Thread(kinect);
             kinectThread.Start();
         }
@@ -878,20 +879,20 @@ namespace CaptureTest
                     startEndtimes += "Stop time:            " + date1.ToString("yyyyyyyyMMddHHmmssfff") + "\r\n";
                     btnStop.Enabled = false;
                     System.IO.File.WriteAllText((new_path + @"\" + "vidTimes.txt"), startEndtimes);
-
+                    kinect_init.WriteCoords();
                     // moves the coords.txt from desktop to subjectID folder
-                    string coords_file = "coords.txt";
-                    string ref_coords_file = "ref_coords.txt";
+                    //string coords_file = "coords.txt";
+                    //string ref_coords_file = "ref_coords.txt";
 
-                    string coordSourceFile = System.IO.Path.Combine(dtopfolder, coords_file);
-                    string coordDestFile = System.IO.Path.Combine(new_path, coords_file);
-                    File.Move(coordSourceFile,
-                        coordDestFile);
+                    //string coordSourceFile = System.IO.Path.Combine(dtopfolder, coords_file);
+                    //string coordDestFile = System.IO.Path.Combine(new_path, coords_file);
+                    //File.Move(coordSourceFile,
+                    //    coordDestFile);
 
-                    string refSourceFile = System.IO.Path.Combine(dtopfolder, ref_coords_file);
-                    string refDestFile = System.IO.Path.Combine(new_path, ref_coords_file);
-                    File.Move(refSourceFile,
-                        refDestFile);
+                    //string refSourceFile = System.IO.Path.Combine(dtopfolder, ref_coords_file);
+                    //string refDestFile = System.IO.Path.Combine(new_path, ref_coords_file);
+                    //File.Move(refSourceFile,
+                    //    refDestFile);
 
                     btnCue.Enabled = true;
                     // for tracking if video is running
