@@ -754,7 +754,7 @@ namespace CaptureTest
             ThreadStart kinect = new ThreadStart( () => kinect_init.Entrance(trackingStatus, pitchStatus, yawStatus, rollStatus,
                                                                                 xStatus, yStatus, zStatus, captureStatus,
                                                                                 btnGetRefCoords, btnStartCapture, btnStart, btnStop,
-                                                                                new_path, this) );
+                                                                                txt_recordingID, this) );
             Thread kinectThread = new Thread(kinect);
             kinectThread.Start();
         }
@@ -797,7 +797,7 @@ namespace CaptureTest
         {
             try
             {
-                btnStart.Enabled = false;
+                btnExit.Enabled = false;
                 btnStart.BackColor = System.Drawing.Color.Red;
                 // start 2013-02-19 __ZC__
 
@@ -840,15 +840,14 @@ namespace CaptureTest
                 date1 = DateTime.Now;
                 startEndtimes += "Before start command: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + "\r\n";
 
-                btnStart.Enabled = false;
                 capture.Start();
 
                 date1 = DateTime.Now;
                 startEndtimes += "After start command:  " + date1.ToString("yyyyyyyyMMddHHmmssfff") + "\r\n";
-
+                btnStart.Enabled = false;
 
                 btnCue.Enabled = false;
-                //btnStart.Enabled = true;
+
             }
             catch (Exception ex)
             {
@@ -870,7 +869,7 @@ namespace CaptureTest
                     //myProc.CloseMainWindow();
                     // Changed from Kill() to CloseMainWindow() so that coords.txt is generated
                     //myProc.Kill();
-
+                    
                     btnStart.BackColor = System.Drawing.Color.Gray;
                     date1 = DateTime.Now;
                     startEndtimes += "Before stop time:     " + date1.ToString("yyyyyyyyMMddHHmmssfff") + "\r\n";
@@ -897,6 +896,7 @@ namespace CaptureTest
                     btnCue.Enabled = true;
                     // for tracking if video is running
                     btnStart.Enabled = false;
+                    btnExit.Enabled = true;
 
                 }
                 else
