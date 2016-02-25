@@ -25,7 +25,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// <summary>
         /// Currently used KinectSensor
         /// </summary>
-        private KinectSensor sensor = null;
+        public KinectSensor sensor = null;
         
         /// <summary>
         /// Body frame source to get a BodyFrameReader
@@ -44,7 +44,6 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
 
         private DateTime date1 = new DateTime(0);
 
-        //private Quaternion quat;
 
         /// <summary>
         /// HighDefinitionFaceFrameSource to get a reader and a builder from.
@@ -115,6 +114,8 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
 
         public delegate bool CheckEnableCallback(Button btn);
 
+        public delegate bool CheckMenuCheckedCallback(MenuItem mnu);
+
         System.Windows.Forms.Control control = new System.Windows.Forms.Control();
 
         // vars from Capture Test
@@ -131,16 +132,28 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         public Button btnStartCapture;
         public Button btnStart;
         public Button btnStop;
+        public MenuItem mnuEnableKinect;
         
 
         /// <summary>
         /// Initializes a new instance of the MainWindow class.
         /// </summary>
+        //public MainWindow()
+        //{
+        //    this.InitializeComponent();
+        //    this.DataContext = this;
+        //}
+
+
+        /// <summary>
+        /// Entrance to the class from CaptureTest.
+        /// </summary>
         public void Entrance(TextBox trackingStatus, TextBox pitchStatus, TextBox yawStatus, TextBox rollStatus,
                                 TextBox xStatus, TextBox yStatus, TextBox zStatus, TextBox captureStatus,
                                 Button btnGetRefCoords, Button btnStartCapture, Button btnStart, Button btnStop,
-                                TextBox subjID, Control control)
+                                TextBox subjID, MenuItem mnuEnableKinect, Control control)
         {
+            Console.WriteLine("INITIALIZING KINECT!!!");
             //this.InitializeComponent();
             //this.DataContext = this;
             this.trackingStatus = trackingStatus;
@@ -156,10 +169,31 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             this.btnStart = btnStart;
             this.btnStop = btnStop;
             this.subjID = subjID;
+            this.mnuEnableKinect = mnuEnableKinect;
             this.control = control;
             this.InitializeHDFace();
             
         }
+
+
+        private bool CheckMenuChecked(MenuItem mnu)
+        {
+            // InvokeRequired required compares the thread ID of the
+            // calling thread to the thread ID of the creating thread.
+            // If these threads are different, it returns true.
+            if (control.InvokeRequired)
+            {
+                CheckMenuCheckedCallback d = new CheckMenuCheckedCallback(CheckMenuChecked);
+
+                return (bool)control.Invoke(d, new object[] { mnu });
+
+            }
+            else
+            {
+                return mnu.Checked;
+            }
+        }
+
 
         private void ChangeText(TextBox txtbox, string text)
         {
@@ -461,6 +495,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             if ((status & FaceModelBuilderCollectionStatus.FrontViewFramesNeeded) != 0)
             {
                 this.ChangeText(this.captureStatus, "Look FORWARD");
+                //this.forwardNeeded.Opacity = 100;
                 //this.forwardNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");//red
                 res = "FrontViewFramesNeeded";
                 return res;
@@ -470,7 +505,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             //    this.forwardNeeded.Opacity = 50;
             //    this.forwardNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
             //}
-
+            
             if ((status & FaceModelBuilderCollectionStatus.LeftViewsNeeded) != 0)
             {
                 this.ChangeText(this.captureStatus, "Look LEFT");
@@ -482,13 +517,21 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             //else
             //{
             //    this.leftNeeded.Opacity = 50;
-            //    this.leftNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
+            //    this.leftNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#ffb0b0b0");//gray
             //}
-
+            //Console.WriteLine("RIGHT");
+            //Console.WriteLine(status.ToString() + FaceModelBuilderCollectionStatus.RightViewsNeeded);
+            //Console.WriteLine(status == FaceModelBuilderCollectionStatus.RightViewsNeeded);
+            //Console.WriteLine(status);
+            //Console.WriteLine((int)status);
+            //Console.WriteLine((int)FaceModelBuilderCollectionStatus.RightViewsNeeded);
+            //Console.WriteLine((status & FaceModelBuilderCollectionStatus.RightViewsNeeded) != 0);
+            //Console.WriteLine("/Turn Right");
             if ((status & FaceModelBuilderCollectionStatus.RightViewsNeeded) != 0)
             {
 
                 this.ChangeText(this.captureStatus, "Look RIGHT");
+                Console.WriteLine("End RIGHT!!");
                 //this.rightNeeded.Opacity = 100;
                 //this.rightNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");//red
                 res = "RightViewsNeeded";
@@ -496,25 +539,33 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             }
             //else
             //{
-            //    this.rightNeeded.Opacity = 50;
-            //    this.rightNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
+                //this.rightNeeded.Opacity = 50;
+                //this.rightNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
             //}
-            Console.WriteLine("status " + status.ToString());
-            Console.WriteLine("Collection Status " + FaceModelBuilderCollectionStatus.RightViewsNeeded.ToString());
+            //Console.WriteLine("TILT UP");
+            //Console.WriteLine(status.ToString() + FaceModelBuilderCollectionStatus.TiltedUpViewsNeeded);
+            //Console.WriteLine(status == FaceModelBuilderCollectionStatus.TiltedUpViewsNeeded);
+            //Console.WriteLine(status);
+            //Console.WriteLine((int)status);
+            //Console.WriteLine((int)FaceModelBuilderCollectionStatus.TiltedUpViewsNeeded);
+            //Console.WriteLine((status & FaceModelBuilderCollectionStatus.TiltedUpViewsNeeded));
+            //Console.WriteLine(((status & FaceModelBuilderCollectionStatus.TiltedUpViewsNeeded) != 0));
+            //Console.WriteLine("/Tilt UP");
             if ((status & FaceModelBuilderCollectionStatus.TiltedUpViewsNeeded) != 0)
             {
                 this.ChangeText(this.captureStatus, "Look UP");
+                //Console.WriteLine("End TILT UP!!");
                 //this.upNeeded.Opacity = 100;
                 //this.upNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707");//red
                 res = "TiltedUpViewsNeeded";
                 Console.WriteLine(res);
                 return res;
             }
-            Console.WriteLine("Passed Tilted UP");
+
             //else
             //{
-            //    this.upNeeded.Opacity = 50;
-            //    this.upNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
+                //this.upNeeded.Opacity = 50;
+                //this.upNeeded.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFB0B0B0");//gray
             //}
 
             if ((status & FaceModelBuilderCollectionStatus.MoreFramesNeeded) != 0)
@@ -523,9 +574,18 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
                 res = "TiltedUpViewsNeeded";
                 return res;
             }
-            Console.WriteLine("Right before Capture Completion Status");
+            //Console.WriteLine("CAPTURE");
+            //Console.WriteLine(status.ToString() + FaceModelBuilderCollectionStatus.Complete);
+            //Console.WriteLine(status);
+            //Console.WriteLine((int)status);
+            //Console.WriteLine((int)FaceModelBuilderCollectionStatus.Complete);
+            //Console.WriteLine(status == FaceModelBuilderCollectionStatus.Complete);
+            //Console.WriteLine((status & FaceModelBuilderCollectionStatus.Complete));
+            //Console.WriteLine((status & FaceModelBuilderCollectionStatus.Complete) != 0);
+            //Console.WriteLine("/CAPTURE");
             if ((status & FaceModelBuilderCollectionStatus.Complete) != 0)
             {
+                Console.WriteLine("End CAPTURE!!");
                 this.ChangeText(this.captureStatus, "CAPTURED");
                 this.ChangeColor(this.captureStatus, "green");
                 //this.forwardNeeded.Opacity = 0;
@@ -534,6 +594,8 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
                 //this.upNeeded.Opacity = 0;
                 //this.captured.Opacity = 100;
                 res = "Complete";
+                //this.ChangeTextColor(btnStartCapture, "gray");
+                //this.SetEnable(btnStartCapture, "disable");
                 return res;
             }
 
@@ -564,7 +626,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// <summary>
         /// Initialize Kinect object
         /// </summary>
-        public void InitializeHDFace()
+        private void InitializeHDFace()
         {
             this.CurrentBuilderStatus = "Ready To Start Capture";
 
@@ -583,8 +645,9 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
 
             this.InitializeMesh();
             this.UpdateMesh();
-
+            Console.WriteLine("Before Sensor on");
             this.sensor.Open();
+            Console.WriteLine("After Sensor on");
         }
 
         /// <summary>
@@ -637,8 +700,25 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         private void UpdateMesh()
         {
             var vertices = this.currentFaceModel.CalculateVerticesForAlignment(this.currentFaceAlignment);
-
-
+            Console.WriteLine("Updating Mesh");
+            if (!this.CheckMenuChecked(this.mnuEnableKinect))
+            {
+                Console.WriteLine("SHOULD BE CLOSING");
+                //this.sensor.Close();
+                //try
+                //{
+                bool a = System.Threading.Thread.CurrentThread.Join(TimeSpan.FromMinutes(2));
+                Console.WriteLine("Thread has exited. That statement is " + a.ToString());
+                    //System.Threading.Thread.CurrentThread.Abort();
+                //}
+                //catch (System.Threading.ThreadAbortException e) 
+                //{ 
+                //}
+                //finally //(System.Threading.ThreadAbortException ex) 
+                //{ 
+                //}
+                
+            }
             for (int i = 0; i < vertices.Count; i++)
             {
                 var vert = vertices[i];
@@ -693,9 +773,9 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
 
             //check to see if the reference coordinates have been obtained yet
 
-            //if (this.refCoordButton.IsEnabled == false && this.writeCoordsButton.IsEnabled == true
-            
-            if (this.btnGetRefCoords.Enabled == false && this.CheckEnable(btnStop) == true )
+            //if (this.refCoordButton.IsEnabled == false && this.writeCoordsButton.IsEnabled == true)
+
+            if (this.btnGetRefCoords.Enabled == false && this.CheckEnable(btnStop) == true)
             {
 
                 //Obtain Coordinates
@@ -717,12 +797,12 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
                 //coordinates += ")\r\n";
                 //coordinates += "Time: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + " Translation: (Zero point in X-Axis: " + this.currentFaceAlignment.HeadPivotPoint.X.ToString() + " mm, Zero-point in Y-Axis: " + this.currentFaceAlignment.HeadPivotPoint.Y.ToString() + " mm, Distance from Kinect: " + this.currentFaceAlignment.HeadPivotPoint.Z.ToString() + " mm)" + "\r\n";
 
-                if (this.CheckEnable(this.btnStart) == false && this.CheckEnable(this.btnStop) == true )
-                {
+                //if (this.CheckEnable(this.btnStart) == false && this.CheckEnable(this.btnStop) == true )
+                //{
 
-                    q.Enqueue(coords);
-                }
-                
+                //    q.Enqueue(coords);
+                //}
+                q.Enqueue(coords);
                 //if (i == 2000){ 
                 //    //q.Dequeue();
                 //    string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
@@ -798,7 +878,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             if (this.CurrentTrackingId != 0 || this.PastTrackingId != 0)
             {
                 //this.PastTrackingId = this.CurrentTrackingId;
-                //Console.WriteLine("Frame has arrived!");
+                Console.WriteLine("Green Frame has arrived!");
                 this.ChangeText(trackingStatus, "TRACKING");
                 this.ChangeColor(trackingStatus, "green");
                 //this.trackLabel.Text = "TRACKING";
@@ -806,7 +886,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             }
             //else if (this.CurrentTrackingId == 0 && this.PastTrackingId == 0)
             //{
-            //    this.PastTrackingId = this.CurrentTrackingId;
+            this.PastTrackingId = this.CurrentTrackingId;
             //    this.trackLabel.Text = "NOT TRACKING";
             //    this.trackLabel.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#FFF90707"); //Red
             //}
@@ -965,6 +1045,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// <param name="e">event arguments</param>
         private void HdFaceReader_FrameArrived(object sender, HighDefinitionFaceFrameArrivedEventArgs e)
         {
+            Console.WriteLine("FRame has arrived");
             using (var frame = e.FrameReference.AcquireFrame())
             {
                 // We might miss the chance to acquire the frame; it will be null if it's missed.
@@ -1014,10 +1095,18 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             string ref_coords = pitch.ToString() + "\t" + yaw.ToString() + "\t" + roll.ToString() + "\t" + x.ToString() + "\t" + y.ToString() + "\t" + z.ToString();
 
             string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            System.IO.File.WriteAllText(dtopfolder + @"\ref_coords.txt", ref_coords);
+            string destinationDir = CheckText(subjID);
+            string pattern = "[\\~#%&*{}/:<>?|\"-]";
+            string replacement = "_";
+            System.Text.RegularExpressions.Regex regEx = new System.Text.RegularExpressions.Regex(pattern);
+            destinationDir = System.Text.RegularExpressions.Regex.Replace(regEx.Replace(destinationDir, replacement), @"\s+", "_");
+            destinationDir = dtopfolder + @"\" + date_today + "_" + destinationDir;
+            System.IO.File.WriteAllText(destinationDir + @"\ref_coords.txt", ref_coords);
 
             this.ChangeTextColor(btnGetRefCoords, "gray");
             this.SetEnable(btnGetRefCoords, "disable");
+            this.SetEnable(btnStart, "enable");
+            this.ChangeTextColor(btnStart, "black");
         }
 
         /// <summary>
@@ -1025,8 +1114,8 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         /// </summary>
         public void StartCapture()
         {
-            this.ChangeTextColor(btnStartCapture, "gray");
-            this.SetEnable(btnStartCapture, "disable");
+            //this.ChangeTextColor(btnStartCapture, "gray");
+            //this.SetEnable(btnStartCapture, "disable");
 
             this.StopFaceCapture();
 
@@ -1037,10 +1126,14 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             this.faceModelBuilder.BeginFaceDataCollection();
 
             this.faceModelBuilder.CollectionCompleted += this.HdFaceBuilder_CollectionCompleted;
+
             //this.forwardNeeded.Opacity = 25;
             //this.upNeeded.Opacity = 25;
             //this.leftNeeded.Opacity = 25;
             //this.rightNeeded.Opacity = 25;
+
+            this.ChangeTextColor(btnGetRefCoords, "black");
+            this.SetEnable(btnGetRefCoords, "enable");
         }
 
         /// <summary>
@@ -1052,7 +1145,7 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             //if (writeCoordsButton.IsEnabled == true)
             //{
             string coordstring;
-            Console.WriteLine("Q's Count" + q.Count.ToString());
+            
             while (q.Count > 0)
             {
                 var coords = q.Dequeue();
@@ -1072,30 +1165,39 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             //}
             coordstring = coordinates.ToString();
             string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordstring );
-            System.Windows.Forms.MessageBox.Show("Completed writing coords file, carry on.");
-            // Move KinectCoordinate file and ReferenceCoordinateFile
-            string destinationDir = CheckText(subjID);
-            string coords_file = "coords.txt";
-            string ref_coords_file = "ref_coords.txt";
 
+            string destinationDir = CheckText(subjID);
             string pattern = "[\\~#%&*{}/:<>?|\"-]";
             string replacement = "_";
             System.Text.RegularExpressions.Regex regEx = new System.Text.RegularExpressions.Regex(pattern);
             destinationDir = System.Text.RegularExpressions.Regex.Replace(regEx.Replace(destinationDir, replacement), @"\s+", "_");
             destinationDir = dtopfolder + @"\" + date_today + "_" + destinationDir;
 
-            string coordSourceFile = System.IO.Path.Combine(dtopfolder, coords_file);
-            string coordDestFile = System.IO.Path.Combine(destinationDir, coords_file);
-            System.IO.File.Move(coordSourceFile,
-                coordDestFile);
+            System.IO.File.WriteAllText(destinationDir + @"\coords.txt", coordstring );
+            
+            // Move KinectCoordinate file and ReferenceCoordinateFile
+            //string destinationDir = CheckText(subjID);
+            //string coords_file = "coords.txt";
+            //string ref_coords_file = "ref_coords.txt";
 
-            string refSourceFile = System.IO.Path.Combine(dtopfolder, ref_coords_file);
-            string refDestFile = System.IO.Path.Combine(destinationDir, ref_coords_file);
-           System.IO.File.Move(refSourceFile,
-                refDestFile);
+            //string pattern = "[\\~#%&*{}/:<>?|\"-]";
+            //string replacement = "_";
+            //System.Text.RegularExpressions.Regex regEx = new System.Text.RegularExpressions.Regex(pattern);
+            //destinationDir = System.Text.RegularExpressions.Regex.Replace(regEx.Replace(destinationDir, replacement), @"\s+", "_");
+            //destinationDir = dtopfolder + @"\" + date_today + "_" + destinationDir;
 
-           System.Windows.Forms.MessageBox.Show("Coords files written!");
+            //string coordSourceFile = System.IO.Path.Combine(dtopfolder, coords_file);
+            //string coordDestFile = System.IO.Path.Combine(destinationDir, coords_file);
+            //System.IO.File.Move(coordSourceFile,
+            //    coordDestFile);
+
+            //string refSourceFile = System.IO.Path.Combine(dtopfolder, ref_coords_file);
+            //string refDestFile = System.IO.Path.Combine(destinationDir, ref_coords_file);
+            //System.IO.File.Move(refSourceFile,
+            //    refDestFile);
+
+            System.Windows.Forms.MessageBox.Show("Coords files written!");
+            
         }
 
         /// <summary>
@@ -1128,6 +1230,9 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             //System.IO.File.WriteAllText(dtopfolder + @"\coords.txt", coordinates);
 
             //this.InternalDispose();
+            Console.WriteLine("CAPTURED!");
+            this.ChangeText(this.captureStatus, "CAPTURED");
+            this.ChangeColor(this.captureStatus, "green");
             //this.forwardNeeded.Opacity = 0;
             //this.leftNeeded.Opacity = 0;
             //this.rightNeeded.Opacity = 0;

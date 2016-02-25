@@ -297,9 +297,9 @@ namespace DirectX.Capture
 	///  to others, post your question on the www.codeproject.com
 	///  page for DirectX.Capture.
 	/// </remarks>
-	public class Capture
+    public class Capture : ISampleGrabberCB
 	{
-
+        
 		// ------------------ Private Enumerations --------------------
 
 		/// <summary> Possible states of the interal filter graph </summary>
@@ -904,7 +904,7 @@ namespace DirectX.Capture
 		protected IBaseFilter		audioCompressorFilter = null;		// DShow Filter: selected audio compressor
 		protected IBaseFilter		muxFilter = null;					// DShow Filter: multiplexor (combine video and audio streams)
 		protected IFileSinkFilter	fileWriterFilter = null;			// DShow Filter: file writer
-		
+        private bool AudioViaPci = false;
 
 		// ------------- Constructors/Destructors --------------
 
@@ -922,6 +922,7 @@ namespace DirectX.Capture
 			this.videoDevice = videoDevice;
 			this.audioDevice = audioDevice;
 			this.Filename = getTempFilename();
+            //this.AudioViaPci = audioViaPci;
 			createGraph();
 		}
 
@@ -1746,6 +1747,364 @@ namespace DirectX.Capture
 			if ( !Stopped )
 				throw new InvalidOperationException( "This operation not allowed while Capturing. Please Stop the current capture." ); 
 		}
+
+
+        /// CODE FOR MIC SOUND LEVEL METERS
+        /// 
+
+//#if DSHOWNET
+		/// <summary>
+		/// CLSID_SampleGrabber
+		/// </summary>
+		[ComImport, Guid("C1F400A0-3F08-11d3-9F0B-006008039E37")]
+			public class SampleGrabber
+		{
+		}
+
+		/// <summary>
+		/// CLSID_NullRenderer
+		/// </summary>
+		[ComImport, Guid("C1F400A4-3F08-11d3-9F0B-006008039E37")]
+			public class NullRenderer
+		{
+		}
+
+		/// <summary> MEDIASUBTYPE_PCM </summary>
+		public static readonly Guid PCM = new Guid(0x00000001, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xAA, 0x00, 0x38, 0x9B, 0x71);
+
+		/// <summary> FORMAT_WaveFormatEx </summary>
+		public static readonly Guid WaveEx = new Guid(0x05589f81, 0xc356, 0x11ce, 0xbf, 0x01, 0x00, 0xaa, 0x00, 0x55, 0x59, 0x5a);
+//#endif
+
+        /// <summary>
+        /// SampleGrabber flag, if false do not insert SampleGrabber in graph
+        /// </summary>
+        private bool allowSampleGrabber = false;
+
+        /// <summary>
+        /// Check if usage SampleGrabber is allowed
+        /// </summary>
+        public bool AllowSampleGrabber
+        {
+            get { return this.allowSampleGrabber; }
+            set { this.allowSampleGrabber = value; }
+        }
+
+        /// <summary> Audio grabber filter interface. </summary>
+        private IBaseFilter audioGrabFlt = null;
+
+        /// <summary>
+        /// Null renderer for AudioGrabber in case off old TV card with
+        /// audio capturing via the soundcard. TV card is connected via
+        /// a wired connection with the soundcard.
+        /// </summary>
+        private IBaseFilter nullRendererFlt = null;
+
+        /// <summary>
+        /// Audio Grabber interface
+        /// </summary>
+        protected ISampleGrabber audioGrabber = null;
+
+        int ISampleGrabberCB.SampleCB(double SampleTime, IMediaSample pSample)
+        {
+            Trace.Write("Audio sample ...");
+            return 0;
+        }
+
+        /// <summary>
+        /// Enable Sample Grabber event
+        /// </summary>
+        /// <param name="handler"></param>
+        public void EnableEvent(AudioFrame handler)
+        {
+            if (this.audioGrabber == null)
+            {
+                Console.WriteLine("AG RESET TO NULL");
+                InitAudioGrabber();
+                AllowSampleGrabber = true;
+                //return;
+            }
+            Trace.Write("Init audio grabbing ...");
+
+            if (this.savedArray == null)
+            {
+                Console.WriteLine("sAVEDaRRAY RESET TO NULL");
+                this.savedArray = new short[50000];
+            }
+            //this.InitAudioGrabbing();
+
+            if (this.audioGrabber == null)
+            {
+                Console.WriteLine("AUDIO GRABBER HANDLE IS NULL");
+                return;
+            }
+            Console.WriteLine("GRABBING AUDIO FRAME -SHOULD BE");
+            this.FrameEvent += new AudioFrame(handler);
+            this.audioGrabber.SetCallback( this, 1 );
+        }
+
+        /// <summary>
+        /// Disable Sample Grabber event
+        /// </summary>
+        /// <param name="handler"></param>
+        public void DisableEvent(AudioFrame handler)
+        {
+            if (this.audioGrabber == null)
+            {
+                return;
+            }
+            this.FrameEvent -= handler;
+            this.audioGrabber.SetCallback(null, 0);
+        }
+
+        public bool AudioAvailable
+        {
+            get
+            {
+                return (((this.AudioViaPci) && (this.VideoDevice != null)) ||
+                         (this.AudioDevice != null));
+            }
+        }
+        /// <summary> Interface frame event </summary>
+        public delegate void AudioFrame(short[] AS, int BufferLen);
+        /// <summary> Frame event </summary>
+        public event AudioFrame FrameEvent;
+        private short[] savedArray;
+
+        int ISampleGrabberCB.BufferCB(double SampleTime, IntPtr pBuffer, int BufferLen)
+        {
+            Marshal.Copy(pBuffer, this.savedArray, 0, BufferLen / 2);
+            this.FrameEvent(this.savedArray, BufferLen / 2);
+            return 0;
+        }
+        
+        private bool InitAudioGrabber()
+        {
+            if (!this.AudioAvailable)
+            {
+                Console.WriteLine("NO AUDIO AVAILABLE");
+                // nothing to do
+                return false;
+            }
+
+            if (!this.allowSampleGrabber)
+            {
+                Console.WriteLine("Sampling NOT ALLOWED");
+                return false;
+            }
+
+            this.DisposeAudioGrabber();
+
+            int hr = 0;
+
+            // Get SampleGrabber if needed
+            if (this.audioGrabber == null)
+            {
+                Console.WriteLine("Audio GRABBER ENABLED");
+                this.audioGrabber = new SampleGrabber() as ISampleGrabber;
+            }
+
+            if (this.audioGrabber == null)
+            {
+                Console.WriteLine("AUDIO GRABBER NULL");
+                return false;
+            }
+
+//#if DSHOWNET
+	        this.audioGrabFlt	= (IBaseFilter)this.audioGrabber;
+//#else
+//            this.audioGrabFlt = audioGrabber as IBaseFilter;
+//#endif
+
+            if (this.audioGrabFlt == null)
+            {
+                Marshal.ReleaseComObject(this.audioGrabber);
+                this.audioGrabber = null;
+                Console.WriteLine("MARSHALLING NULL");
+            }
+
+            AMMediaType media = new AMMediaType();
+
+            media.majorType = MediaType.Audio;
+//#if DSHOWNET
+            media.subType	= PCM;
+//#else
+//            media.subType = MediaSubType.PCM;
+//#endif
+            //media.subType = DShowNET.MediaSubType.Avi;
+            
+            media.formatPtr = IntPtr.Zero;
+            hr = this.audioGrabber.SetMediaType(media);
+            Console.WriteLine("HR value = " + hr.ToString());
+            if (hr < 0)
+            {
+                Marshal.ThrowExceptionForHR(hr);
+            }
+
+            hr = graphBuilder.AddFilter(audioGrabFlt, "AudioGrabber");
+            if (hr < 0)
+            {
+                Marshal.ThrowExceptionForHR(hr);
+            }
+
+            hr = this.audioGrabber.SetBufferSamples(false);
+            if (hr == 0)
+            {
+                hr = this.audioGrabber.SetOneShot(false);
+            }
+            if (hr == 0)
+            {
+                hr = this.audioGrabber.SetCallback(null, 0);
+            }
+            if (hr < 0)
+            {
+                Marshal.ThrowExceptionForHR(hr);
+            }
+
+            return true;
+        }
+
+        private void SetMediaSampleGrabber()
+        {
+            this.snapShotValid = false;
+            if ((this.audioGrabFlt != null) && (this.AllowSampleGrabber))
+            {
+                AMMediaType media = new AMMediaType();
+                media.formatType = FormatType.WaveEx;
+                int hr;
+
+                hr = this.audioGrabber.GetConnectedMediaType(media);
+                if (hr < 0)
+                {
+                    Marshal.ThrowExceptionForHR(hr);
+                }
+                if ((media.formatType != FormatType.WaveEx) ||
+                        (media.formatPtr == IntPtr.Zero))
+                {
+                    throw new NotSupportedException
+                        ("Unknown Grabber Media Format");
+                }
+
+                WaveFormatEx wav = new WaveFormatEx();
+                wav = (WaveFormatEx)Marshal.PtrToStructure
+                        (media.formatPtr, typeof(WaveFormatEx));
+                this.avgBytesPerSec = wav.nAvgBytesPerSec;
+                this.audioBlockAlign = wav.nBlockAlign;
+                this.audioChannels = wav.nChannels;
+                this.audioSamplesPerSec = wav.nSamplesPerSec;
+                this.audioBitsPerSample = wav.wBitsPerSample;
+                Marshal.FreeCoTaskMem(media.formatPtr);
+                media.formatPtr = IntPtr.Zero;
+                this.snapShotValid = true;
+            }
+
+            if (!this.snapShotValid)
+            {
+                this.avgBytesPerSec = 0;
+                this.audioBlockAlign = 0;
+                this.audioChannels = 0;
+                this.audioSamplesPerSec = 0;
+                this.audioBitsPerSample = 0;
+            }
+        }
+
+        private int avgBytesPerSec = 0;
+        private int audioBlockAlign = 0;
+        private int audioChannels = 0;
+        private int audioSamplesPerSec = 0;
+        private int audioBitsPerSample = 0;
+        private bool snapShotValid = false;
+
+        /// <summary>
+        /// Dispose Sample Grabber specific data
+        /// </summary>
+        public void DisposeAudioGrabber()
+        {
+            if (this.audioGrabFlt != null)
+            {
+                try
+                {
+                    this.graphBuilder.RemoveFilter(this.audioGrabFlt);
+                }
+                catch
+                {
+                }
+                Marshal.ReleaseComObject(this.audioGrabFlt);
+                this.audioGrabFlt = null;
+            }
+
+            if (this.audioGrabber != null)
+            {
+                Marshal.ReleaseComObject(this.audioGrabber);
+                this.audioGrabber = null;
+            }
+
+            if (this.nullRendererFlt != null)
+            {
+                try
+                {
+                    this.graphBuilder.RemoveFilter(this.nullRendererFlt);
+                }
+                catch
+                {
+                }
+                Marshal.ReleaseComObject(this.nullRendererFlt);
+                this.nullRendererFlt = null;
+            }
+            this.savedArray = null;
+        }
+
+//        private bool InitSampleGrabber()
+//        {
+//            // Get SampleGrabber
+//            this.sampGrabber = new SampleGrabber() as ISampleGrabber;
+
+//            if (this.sampGrabber == null)
+//            {
+//                return false;
+//            }
+
+//#if DSHOWNET
+//    this.baseGrabFlt    = (IBaseFilter)this.sampGrabber;
+//#else
+//            this.baseGrabFlt = sampGrabber as IBaseFilter;
+//#endif
+
+//            if (this.baseGrabFlt == null)
+//            {
+//                Marshal.ReleaseComObject(this.sampGrabber);
+//                this.sampGrabber = null;
+//            }
+//            AMMediaType media = new AMMediaType();
+
+//            media.majorType = MediaType.Video;
+//            media.subType = MediaSubType.RGB24;
+//            media.formatPtr = IntPtr.Zero;
+//            hr = sampGrabber.SetMediaType(media);
+//            if (hr < 0)
+//            {
+//                Marshal.ThrowExceptionForHR(hr);
+//            }
+//            hr = graphBuilder.AddFilter(baseGrabFlt, "SampleGrabber");
+//            if (hr < 0)
+//            {
+//                Marshal.ThrowExceptionForHR(hr);
+//            }
+//            hr = sampGrabber.SetBufferSamples(false);
+//            if (hr == 0)
+//            {
+//                hr = sampGrabber.SetOneShot(false);
+//            }
+//            if (hr == 0)
+//            {
+//                hr = sampGrabber.SetCallback(null, 0);
+//            }
+//            if (hr < 0)
+//            {
+//                Marshal.ThrowExceptionForHR(hr);
+//            }
+//            return true;
+//        }
 
 	}
 }

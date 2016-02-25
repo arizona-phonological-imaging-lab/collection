@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Microsoft.Samples.Kinect.HDFaceBasics"
         Title="HDFace Basics"
-        Height="800" Width="770" Loaded="Window_Loaded" 
+        Height="800" Width="770" Loaded="Window_Loaded"
         >
 
     <Window.Resources>

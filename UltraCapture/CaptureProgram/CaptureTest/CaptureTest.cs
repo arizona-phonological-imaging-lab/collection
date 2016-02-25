@@ -17,6 +17,7 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using System.IO;
 using DirectX.Capture;
+using DShowNET.Device;
 using Microsoft.VisualBasic;
 using ScreenShotDemo;
 using System.Drawing.Imaging;
@@ -29,6 +30,7 @@ using Microsoft.Samples.Kinect.HDFaceBasics;
 //using System.Windows.Media;
 //using System.Windows.Media.Media3D;
 //using Microsoft.Samples.Kinect.HDFaceBasics;
+using UserControl;
 
 namespace CaptureTest
 {
@@ -43,7 +45,7 @@ namespace CaptureTest
         private string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         //public MainWindow kinect = new MainWindow();
         public string coordinates;
-        
+
         private string subjectID;
         
         private Capture capture = null;
@@ -51,7 +53,7 @@ namespace CaptureTest
         MainWindow kinect_init = new MainWindow();
         //private System.Object blah = new Object();
         //private System.Windows.Media.CaptureDevice blah = new System.Windows.Media.CaptureDevice();
-
+        
         private System.Windows.Forms.TextBox txtFilename;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnStart;
@@ -86,6 +88,9 @@ namespace CaptureTest
         private System.Windows.Forms.MenuItem mnuChannel;
         private System.Windows.Forms.MenuItem menuItem3;
         private System.Windows.Forms.MenuItem mnuInputType;
+        private System.Windows.Forms.MenuItem menuSampleGrabber1;
+        private System.Windows.Forms.MenuItem menuAllowSampleGrabber1;
+
         private IContainer components;
         //Kinect Related objects
         //private System.Windows.Forms.Button btnRefCoordsLabel;
@@ -100,23 +105,30 @@ namespace CaptureTest
         private DateTime date1 = new DateTime(0);
         private MenuItem menuPostProcess;
         private MenuItem menuRunPostProcess;
-        private Label label2;
+        private Label RecordingIDlabel;
         private TextBox txt_recordingID;
         private TextBox trackingStatus;
         private TextBox pitchStatus;
         private TextBox yawStatus;
         private TextBox rollStatus;
         private Label kinectRegionLabel;
-        private Label label4;
+        private Label CaptureNotificationLabel;
         private TextBox captureStatus;
         private TextBox yStatus;
         private TextBox xStatus;
         private TextBox zStatus;
         private Button btnStartCapture;
         private Button btnGetRefCoords;
+        private System.Windows.Forms.Button button1;
         private string startEndtimes;
+        private System.Windows.Forms.Timer timer1;
+        private UserControl.VuMeter vuMeterLed1;
+        private UserControl.VuMeter vuMeterLed2;
+        private MenuItem mnuEnableKinect;
         //private string refTime;
         //Process myProc;
+        ThreadStart kinect;
+        Thread kinectThread;
 
         public CaptureTest()
         {
@@ -124,7 +136,7 @@ namespace CaptureTest
             //Process myProc;
             // 4-22-2013 removing process for Face Tracking?? problem with Laptop running the secondary process
             //myProc = Process.Start(dtopfolder + @"\dev\GitHub\Ultraspeech\UltraCapture\FaceTrackingBasics-WPF\bin\x64\Release\FaceTrackingBasics.exe");
-
+            
             //myProc = Process.Start(@"C:\Users\apiladmin\Documents\GitHub\APIL\UltraCapture\FaceTrackingBasics-WPF\bin\x64\Release\FaceTrackingBasics.exe");
             //coordinates = kinect.statusText;
             //Console.WriteLine(coordinates.ToString());
@@ -138,7 +150,9 @@ namespace CaptureTest
             //startInfo.Arguments = @"C:\\Users\\apiladmin\\Desktop\\stimulus.py";
             //process.StartInfo = startInfo;
             //process.Start();
-
+            
+            //int loudness = get_Volume.get_Volume(out loudness);
+            //Console.WriteLine("Volume: " + loudness.ToString());
             //var kinect = new MainWindow();
             // Required for Windows Form Designer support
             //
@@ -156,6 +170,7 @@ namespace CaptureTest
             //kinect.InitializeHDFace();
 
             InitializeKinect();
+
             //System.Collections.ObjectModel.ReadOnlyCollection<VideoCapabilities> blah = new System.Collections.ObjectModel.ReadOnlyCollection<VideoCaptureDevice> GetAvailableVideoCaptureDevices();
             //System.Windows.DependencyObject
             // start 2013-02-19 __ZC__
@@ -249,11 +264,13 @@ namespace CaptureTest
             this.menuItem4 = new System.Windows.Forms.MenuItem();
             this.mnuVideoCompressors = new System.Windows.Forms.MenuItem();
             this.mnuAudioCompressors = new System.Windows.Forms.MenuItem();
+            this.mnuEnableKinect = new System.Windows.Forms.MenuItem();
             this.menuItem7 = new System.Windows.Forms.MenuItem();
             this.mnuVideoSources = new System.Windows.Forms.MenuItem();
             this.mnuFrameSizes = new System.Windows.Forms.MenuItem();
             this.mnuFrameRates = new System.Windows.Forms.MenuItem();
             this.mnuVideoCaps = new System.Windows.Forms.MenuItem();
+            this.menuSampleGrabber1 = new System.Windows.Forms.MenuItem();
             this.menuItem5 = new System.Windows.Forms.MenuItem();
             this.mnuAudioSources = new System.Windows.Forms.MenuItem();
             this.mnuAudioChannels = new System.Windows.Forms.MenuItem();
@@ -269,28 +286,33 @@ namespace CaptureTest
             this.mnuPreview = new System.Windows.Forms.MenuItem();
             this.menuPostProcess = new System.Windows.Forms.MenuItem();
             this.menuRunPostProcess = new System.Windows.Forms.MenuItem();
+            this.menuAllowSampleGrabber1 = new System.Windows.Forms.MenuItem();
             this.panelVideo = new System.Windows.Forms.Panel();
             this.btnCue = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
+            this.RecordingIDlabel = new System.Windows.Forms.Label();
             this.txt_recordingID = new System.Windows.Forms.TextBox();
             this.trackingStatus = new System.Windows.Forms.TextBox();
             this.pitchStatus = new System.Windows.Forms.TextBox();
             this.yawStatus = new System.Windows.Forms.TextBox();
             this.rollStatus = new System.Windows.Forms.TextBox();
             this.kinectRegionLabel = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
+            this.CaptureNotificationLabel = new System.Windows.Forms.Label();
             this.captureStatus = new System.Windows.Forms.TextBox();
             this.yStatus = new System.Windows.Forms.TextBox();
             this.xStatus = new System.Windows.Forms.TextBox();
             this.zStatus = new System.Windows.Forms.TextBox();
             this.btnStartCapture = new System.Windows.Forms.Button();
             this.btnGetRefCoords = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.vuMeterLed1 = new UserControl.VuMeter();
+            this.vuMeterLed2 = new UserControl.VuMeter();
             this.SuspendLayout();
             // 
             // txtFilename
             // 
             this.txtFilename.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtFilename.Location = new System.Drawing.Point(391, 390);
+            this.txtFilename.Location = new System.Drawing.Point(506, 390);
             this.txtFilename.Name = "txtFilename";
             this.txtFilename.Size = new System.Drawing.Size(124, 20);
             this.txtFilename.TabIndex = 0;
@@ -299,7 +321,7 @@ namespace CaptureTest
             // label1
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.Location = new System.Drawing.Point(321, 393);
+            this.label1.Location = new System.Drawing.Point(436, 393);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(64, 16);
             this.label1.TabIndex = 1;
@@ -308,7 +330,9 @@ namespace CaptureTest
             // btnStart
             // 
             this.btnStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnStart.Location = new System.Drawing.Point(482, 422);
+            this.btnStart.Enabled = false;
+            this.btnStart.ForeColor = System.Drawing.SystemColors.GrayText;
+            this.btnStart.Location = new System.Drawing.Point(597, 422);
             this.btnStart.Name = "btnStart";
             this.btnStart.Size = new System.Drawing.Size(60, 24);
             this.btnStart.TabIndex = 2;
@@ -318,7 +342,8 @@ namespace CaptureTest
             // btnStop
             // 
             this.btnStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnStop.Location = new System.Drawing.Point(572, 422);
+            this.btnStop.Enabled = false;
+            this.btnStop.Location = new System.Drawing.Point(687, 422);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(40, 24);
             this.btnStop.TabIndex = 3;
@@ -328,7 +353,7 @@ namespace CaptureTest
             // btnExit
             // 
             this.btnExit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnExit.Location = new System.Drawing.Point(628, 422);
+            this.btnExit.Location = new System.Drawing.Point(743, 422);
             this.btnExit.Name = "btnExit";
             this.btnExit.Size = new System.Drawing.Size(120, 24);
             this.btnExit.TabIndex = 5;
@@ -364,7 +389,8 @@ namespace CaptureTest
             this.mnuAudioDevices,
             this.menuItem4,
             this.mnuVideoCompressors,
-            this.mnuAudioCompressors});
+            this.mnuAudioCompressors,
+            this.mnuEnableKinect});
             this.mnuDevices.Text = "Devices";
             // 
             // mnuVideoDevices
@@ -392,6 +418,13 @@ namespace CaptureTest
             this.mnuAudioCompressors.Index = 4;
             this.mnuAudioCompressors.Text = "Audio Compressors";
             // 
+            // mnuEnableKinect
+            // 
+            this.mnuEnableKinect.Checked = true;
+            this.mnuEnableKinect.Index = 5;
+            this.mnuEnableKinect.Text = "Use Kinect";
+            this.mnuEnableKinect.Click += new System.EventHandler(this.mnuEnableKinect_Click);
+            // 
             // menuItem7
             // 
             this.menuItem7.Index = 2;
@@ -400,6 +433,7 @@ namespace CaptureTest
             this.mnuFrameSizes,
             this.mnuFrameRates,
             this.mnuVideoCaps,
+            this.menuSampleGrabber1,
             this.menuItem5,
             this.mnuAudioSources,
             this.mnuAudioChannels,
@@ -437,71 +471,77 @@ namespace CaptureTest
             this.mnuVideoCaps.Text = "Video Capabilities...";
             this.mnuVideoCaps.Click += new System.EventHandler(this.mnuVideoCaps_Click);
             // 
+            // menuSampleGrabber1
+            // 
+            //this.menuSampleGrabber1.Index = 4;
+            //this.menuSampleGrabber1.Text = "Sample Grabber";
+            //this.menuSampleGrabber1.Click += new System.EventHandler(this.menuSampleGrabber1_Click);
+            // 
             // menuItem5
             // 
-            this.menuItem5.Index = 4;
+            this.menuItem5.Index = 5;
             this.menuItem5.Text = "-";
             // 
             // mnuAudioSources
             // 
-            this.mnuAudioSources.Index = 5;
+            this.mnuAudioSources.Index = 6;
             this.mnuAudioSources.Text = "Audio Sources";
             // 
             // mnuAudioChannels
             // 
-            this.mnuAudioChannels.Index = 6;
+            this.mnuAudioChannels.Index = 7;
             this.mnuAudioChannels.Text = "Audio Channels";
             // 
             // mnuAudioSamplingRate
             // 
-            this.mnuAudioSamplingRate.Index = 7;
+            this.mnuAudioSamplingRate.Index = 8;
             this.mnuAudioSamplingRate.Text = "Audio Sampling Rate";
             // 
             // mnuAudioSampleSizes
             // 
-            this.mnuAudioSampleSizes.Index = 8;
+            this.mnuAudioSampleSizes.Index = 9;
             this.mnuAudioSampleSizes.Text = "Audio Sample Size";
             // 
             // mnuAudioCaps
             // 
-            this.mnuAudioCaps.Index = 9;
+            this.mnuAudioCaps.Index = 10;
             this.mnuAudioCaps.Text = "Audio Capabilities...";
             this.mnuAudioCaps.Click += new System.EventHandler(this.mnuAudioCaps_Click);
             // 
             // menuItem3
             // 
-            this.menuItem3.Index = 10;
+            this.menuItem3.Index = 11;
             this.menuItem3.Text = "-";
             // 
             // mnuChannel
             // 
-            this.mnuChannel.Index = 11;
+            this.mnuChannel.Index = 12;
             this.mnuChannel.Text = "TV Tuner Channel";
             // 
             // mnuInputType
             // 
-            this.mnuInputType.Index = 12;
+            this.mnuInputType.Index = 13;
             this.mnuInputType.Text = "TV Tuner Input Type";
             this.mnuInputType.Click += new System.EventHandler(this.mnuInputType_Click);
             // 
             // menuItem6
             // 
-            this.menuItem6.Index = 13;
+            this.menuItem6.Index = 14;
             this.menuItem6.Text = "-";
             // 
             // mnuPropertyPages
             // 
-            this.mnuPropertyPages.Index = 14;
+            this.mnuPropertyPages.Index = 15;
             this.mnuPropertyPages.Text = "PropertyPages";
             // 
             // menuItem8
             // 
-            this.menuItem8.Index = 15;
+            this.menuItem8.Index = 16;
             this.menuItem8.Text = "-";
             // 
             // mnuPreview
             // 
-            this.mnuPreview.Index = 16;
+            this.mnuPreview.Index = 17;
             this.mnuPreview.Text = "Preview";
             this.mnuPreview.Click += new System.EventHandler(this.mnuPreview_Click);
             // 
@@ -518,6 +558,11 @@ namespace CaptureTest
             this.menuRunPostProcess.Text = "Run Post Process";
             this.menuRunPostProcess.Click += new System.EventHandler(this.menuRunPostProcess_Click);
             // 
+            // menuAllowSampleGrabber1
+            // 
+            this.menuAllowSampleGrabber1.Index = -1;
+            this.menuAllowSampleGrabber1.Text = "";
+            // 
             // panelVideo
             // 
             this.panelVideo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -526,32 +571,32 @@ namespace CaptureTest
             this.panelVideo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelVideo.Location = new System.Drawing.Point(324, 8);
             this.panelVideo.Name = "panelVideo";
-            this.panelVideo.Size = new System.Drawing.Size(420, 366);
+            this.panelVideo.Size = new System.Drawing.Size(535, 366);
             this.panelVideo.TabIndex = 6;
             // 
             // btnCue
             // 
             this.btnCue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnCue.Location = new System.Drawing.Point(324, 419);
+            this.btnCue.Location = new System.Drawing.Point(439, 419);
             this.btnCue.Name = "btnCue";
             this.btnCue.Size = new System.Drawing.Size(80, 24);
             this.btnCue.TabIndex = 8;
             this.btnCue.Text = "Preview";
             this.btnCue.Click += new System.EventHandler(this.btnCue_Click);
             // 
-            // label2
+            // RecordingIDlabel
             // 
-            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.label2.Location = new System.Drawing.Point(565, 390);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(77, 17);
-            this.label2.TabIndex = 11;
-            this.label2.Text = "Recording ID:";
+            this.RecordingIDlabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.RecordingIDlabel.Location = new System.Drawing.Point(680, 390);
+            this.RecordingIDlabel.Name = "RecordingIDlabel";
+            this.RecordingIDlabel.Size = new System.Drawing.Size(77, 17);
+            this.RecordingIDlabel.TabIndex = 11;
+            this.RecordingIDlabel.Text = "Recording ID:";
             // 
             // txt_recordingID
             // 
             this.txt_recordingID.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.txt_recordingID.Location = new System.Drawing.Point(645, 387);
+            this.txt_recordingID.Location = new System.Drawing.Point(760, 387);
             this.txt_recordingID.Name = "txt_recordingID";
             this.txt_recordingID.Size = new System.Drawing.Size(103, 20);
             this.txt_recordingID.TabIndex = 10;
@@ -612,15 +657,15 @@ namespace CaptureTest
             this.kinectRegionLabel.TabIndex = 19;
             this.kinectRegionLabel.Text = "Kinect Notifications";
             // 
-            // label4
+            // CaptureNotificationLabel
             // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(65, 331);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(192, 25);
-            this.label4.TabIndex = 21;
-            this.label4.Text = "Capture Notifications";
+            this.CaptureNotificationLabel.AutoSize = true;
+            this.CaptureNotificationLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CaptureNotificationLabel.Location = new System.Drawing.Point(65, 331);
+            this.CaptureNotificationLabel.Name = "CaptureNotificationLabel";
+            this.CaptureNotificationLabel.Size = new System.Drawing.Size(192, 25);
+            this.CaptureNotificationLabel.TabIndex = 21;
+            this.CaptureNotificationLabel.Text = "Capture Notifications";
             // 
             // captureStatus
             // 
@@ -679,8 +724,9 @@ namespace CaptureTest
             // 
             // btnGetRefCoords
             // 
+            this.btnGetRefCoords.Enabled = false;
             this.btnGetRefCoords.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnGetRefCoords.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btnGetRefCoords.ForeColor = System.Drawing.SystemColors.GrayText;
             this.btnGetRefCoords.Location = new System.Drawing.Point(43, 128);
             this.btnGetRefCoords.Name = "btnGetRefCoords";
             this.btnGetRefCoords.Size = new System.Drawing.Size(238, 33);
@@ -689,23 +735,57 @@ namespace CaptureTest
             this.btnGetRefCoords.UseVisualStyleBackColor = true;
             this.btnGetRefCoords.Click += new System.EventHandler(this.btnGetRefCoords_Click);
             // 
+            // button1
+            // 
+            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.button1.Location = new System.Drawing.Point(8, 369);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(88, 24);
+            this.button1.TabIndex = 14;
+            this.button1.Text = "Start VuMeter";
+            //this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // timer1
+            // 
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
+            // vuMeterLed1
+            // 
+            this.vuMeterLed1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.vuMeterLed1.Location = new System.Drawing.Point(324, 393);
+            this.vuMeterLed1.Name = "vuMeterLed1";
+            this.vuMeterLed1.Peak = 0;
+            this.vuMeterLed1.Size = new System.Drawing.Size(100, 20);
+            this.vuMeterLed1.TabIndex = 30;
+            this.vuMeterLed1.Volume = 0;
+            // 
+            // vuMeterLed2
+            // 
+            this.vuMeterLed2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.vuMeterLed2.Location = new System.Drawing.Point(324, 422);
+            this.vuMeterLed2.Name = "vuMeterLed2";
+            this.vuMeterLed2.Peak = 0;
+            this.vuMeterLed2.Size = new System.Drawing.Size(100, 20);
+            this.vuMeterLed2.TabIndex = 31;
+            this.vuMeterLed2.Volume = 0;
+            // 
             // CaptureTest
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(5, 13);
-            this.ClientSize = new System.Drawing.Size(756, 455);
+            this.ClientSize = new System.Drawing.Size(871, 455);
             this.Controls.Add(this.btnGetRefCoords);
             this.Controls.Add(this.btnStartCapture);
             this.Controls.Add(this.zStatus);
             this.Controls.Add(this.xStatus);
             this.Controls.Add(this.yStatus);
             this.Controls.Add(this.captureStatus);
-            this.Controls.Add(this.label4);
+            this.Controls.Add(this.CaptureNotificationLabel);
             this.Controls.Add(this.kinectRegionLabel);
             this.Controls.Add(this.rollStatus);
             this.Controls.Add(this.yawStatus);
             this.Controls.Add(this.pitchStatus);
             this.Controls.Add(this.trackingStatus);
-            this.Controls.Add(this.label2);
+            this.Controls.Add(this.RecordingIDlabel);
             this.Controls.Add(this.txt_recordingID);
             this.Controls.Add(this.btnCue);
             this.Controls.Add(this.panelVideo);
@@ -714,6 +794,9 @@ namespace CaptureTest
             this.Controls.Add(this.btnStart);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txtFilename);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.vuMeterLed1);
+            this.Controls.Add(this.vuMeterLed2);
             this.Menu = this.mainMenu;
             this.Name = "CaptureTest";
             this.Text = "Ultrasound Capture";
@@ -747,18 +830,189 @@ namespace CaptureTest
             
 		}
 
+        
+
         public void InitializeKinect()
         {
             //MainWindow kinect_init = new MainWindow();
             //System.Threading.Thread kinectThread = new System.Threading.Thread(kinect.InitializeComponent());
-            ThreadStart kinect = new ThreadStart( () => kinect_init.Entrance(trackingStatus, pitchStatus, yawStatus, rollStatus,
+            try
+            {
+                ThreadStart kinect = new ThreadStart(() => kinect_init.Entrance(trackingStatus, pitchStatus, yawStatus, rollStatus,
                                                                                 xStatus, yStatus, zStatus, captureStatus,
                                                                                 btnGetRefCoords, btnStartCapture, btnStart, btnStop,
-                                                                                txt_recordingID, this) );
-            Thread kinectThread = new Thread(kinect);
-            kinectThread.Start();
+                                                                                txt_recordingID, mnuEnableKinect, this));
+                kinectThread = new Thread(kinect);
+                kinectThread.Start();
+            }
+            catch
+            {
+                
+                Console.WriteLine("Kinect Thread unable to start.");
+            }
+            
+        }
+        //[System.Security.Permissions.SecurityPermissionAttribute(System.Security.Permissions.SecurityAction.Demand, ControlThread = true)]
+        public void EndKinect()
+        {
+            try
+            {
+                //this.kinectTerminate = true;
+                
+                //this.kinectThread.Join(20000);
+                //this.kinectThread.Interrupt();
+                //this.kinectThread.Abort();
+                Console.WriteLine("Kinect should be aborted...");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Unable to stop Kinect Thread:\n\n" + ex.ToString());
+            }
+
         }
 
+        //
+        // FOR MIC SOUND LEVEL METER
+        //
+        private bool sampleGrabber = false;
+
+        private bool SampleGrabber
+        {
+            get { return this.sampleGrabber; }
+            set
+            {
+                if (this.capture.AllowSampleGrabber)
+                {
+                    this.sampleGrabber = value;
+                }
+                else
+                {
+                    this.sampleGrabber = false;
+                }
+                this.menuSampleGrabber1.Checked = this.sampleGrabber;
+                if (this.vuMeterLed1 == null)
+                {
+                    //this.vuMeterLed1 = new UserControl.VuMeter();
+                    //this.vuMeterLed1.Anchor =
+                    //    ((System.Windows.Forms.AnchorStyles)
+                    //    ((System.Windows.Forms.AnchorStyles.Bottom |
+                    //    System.Windows.Forms.AnchorStyles.Left)));
+                    //this.vuMeterLed1.Visible = false;
+                    //this.vuMeterLed1.Location = new System.Drawing.Point(this.RecordingIDlabel.Location.X + 49, this.RecordingIDlabel.Location.Y);
+                    //this.vuMeterLed1.Name = "vuMeterLed1";
+                    //this.vuMeterLed1.Peak = 0;
+                    //this.vuMeterLed1.Size = new System.Drawing.Size(100, 20);
+                    //this.vuMeterLed1.TabIndex = 30;
+                    //this.vuMeterLed1.Volume = 0;
+                    //this.Controls.Add(this.vuMeterLed1);
+                }
+                
+                if (this.vuMeterLed2 == null)
+                {
+                    //this.vuMeterLed2 = new UserControl.VuMeter();
+                    //this.vuMeterLed2.Anchor =
+                    //    ((System.Windows.Forms.AnchorStyles)
+                    //    ((System.Windows.Forms.AnchorStyles.Bottom |
+                    //    System.Windows.Forms.AnchorStyles.Left)));
+                    //this.vuMeterLed2.Visible = false;
+                    //this.vuMeterLed2.Location = new System.Drawing.Point(this.CaptureNotificationLabel.Location.X + 49, this.CaptureNotificationLabel.Location.Y);
+                    //this.vuMeterLed2.Name = "vuMeterLed2";
+                    //this.vuMeterLed2.Peak = 0;
+                    //this.vuMeterLed2.Size = new System.Drawing.Size(500, 200);
+                    //this.vuMeterLed2.TabIndex = 31;
+                    //this.vuMeterLed2.Volume = 0;
+                    //this.Controls.Add(this.vuMeterLed2);
+                }
+                if (this.sampleGrabber)
+                {
+                    //this.button1.Visible = true;
+                    //this.txtFilename.Visible = false;
+                    //this.btnCue.Visible = false;
+                    //this.btnStart.Visible = false;
+                    //this.btnStop.Visible = false;
+                    //this.label1.Visible = false;
+                    //this.RecordingIDlabel.Visible = true;
+                    //this.CaptureNotificationLabel.Visible = true;
+                    //this.vuMeterLed1.Visible = true;
+                    //this.vuMeterLed1.Enabled = true;
+                    //this.vuMeterLed2.Visible = true;
+                    //this.vuMeterLed2.Enabled = true;
+                }
+                else
+                {
+                    //this.button1.Visible = false;
+                    //this.vuMeterLed1.Visible = false;
+                    //this.vuMeterLed2.Visible = false;
+                    //this.RecordingIDlabel.Visible = false;
+                    //this.CaptureNotificationLabel.Visible = false;
+                    //this.txtFilename.Visible = true;
+                    //this.btnCue.Visible = true;
+                    //this.btnStart.Visible = true;
+                    //this.btnStop.Visible = true;
+                    //this.label1.Visible = true;
+                }
+            }
+        }
+
+        //private bool audioSampling = false;
+        //private bool AudioSampling
+        //{
+        //    get { return this.audioSampling; }
+        //    set
+        //    {
+        //        this.audioSampling = value;
+        //        if (value)
+        //        {
+        //            this.timer1.Start();
+        //            this.timer1running = true;
+        //            this.capture.EnableEvent(audioHandler);
+        //            this.button1.Text = "Stop VuMeter";
+        //        }
+        //        else
+        //        {
+        //            this.capture.DisableEvent(audioHandler);
+        //            this.timer1running = false;
+        //            this.timer1.Stop();
+        //            this.button1.Text = "Start VuMeter";
+        //        }
+        //    }
+        //}
+
+        //private void button1_Click(object sender, System.EventArgs e)
+        //{
+        //    this.capture.AllowSampleGrabber = !this.capture.AllowSampleGrabber;
+        //    if (this.capture.AllowSampleGrabber)
+        //    {
+        //        this.AudioSampling = !this.AudioSampling;
+        //    }
+        //    else
+        //    {
+        //        this.AudioSampling = false;
+        //        this.SampleGrabber = false;
+        //    }
+        //}
+
+        //private void menuSampleGrabber1_Click(object sender, System.EventArgs e)
+        //{
+        //    if (this.SampleGrabber)
+        //    {
+        //        this.SampleGrabber = false;
+        //    }
+        //    else
+        //    {
+        //        this.SampleGrabber = true;
+        //    }
+        //}
+
+        //private void menuAllowSampleGrabber1_Click(object sender, System.EventArgs e)
+        //{
+        //    // Set flag, if set, then after reselection of audio or video device,
+        //    // the SampleGrabber shows up in or disappears from the menu.
+        //    this.menuAllowSampleGrabber1.Checked = !this.menuAllowSampleGrabber1.Checked;
+        //}
+        //
+        // END MIC SOUND LEVEL METER
+        //
         private void btnExit_Click(object sender, System.EventArgs e)
         {
             if (capture != null)
@@ -778,6 +1032,7 @@ namespace CaptureTest
                 if (capture.PreviewWindow == null)
                 {
                     capture.PreviewWindow = panelVideo;
+                    Console.WriteLine(capture.PropertyPages.ToString());
                     mnuPreview.Checked = true;
                 }
                 else
@@ -836,7 +1091,8 @@ namespace CaptureTest
                     throw new ApplicationException("Please select a video and/or audio device.");
                 if (!capture.Cued)
                     capture.Filename = new_path + @"\" + txtFilename.Text;
-
+               
+                btnStop.Enabled = true;
                 date1 = DateTime.Now;
                 startEndtimes += "Before start command: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + "\r\n";
 
@@ -845,7 +1101,6 @@ namespace CaptureTest
                 date1 = DateTime.Now;
                 startEndtimes += "After start command:  " + date1.ToString("yyyyyyyyMMddHHmmssfff") + "\r\n";
                 btnStart.Enabled = false;
-
                 btnCue.Enabled = false;
 
             }
@@ -937,7 +1192,7 @@ namespace CaptureTest
                 oldPreviewWindow = capture.PreviewWindow;
                 capture.PreviewWindow = null;
             }
-
+            
             // Load video devices
             Filter videoDevice = null;
             if (capture != null)
@@ -962,7 +1217,7 @@ namespace CaptureTest
                 mnuVideoDevices.MenuItems.Add(m);
             }
             mnuVideoDevices.Enabled = (filters.VideoInputDevices.Count > 0);
-
+            
             // Load audio devices
             Filter audioDevice = null;
             if (capture != null)
@@ -979,7 +1234,6 @@ namespace CaptureTest
                 mnuAudioDevices.MenuItems.Add(m);
             }
             mnuAudioDevices.Enabled = (filters.AudioInputDevices.Count > 0);
-
 
             // Load video compressors
             try
@@ -1504,6 +1758,74 @@ namespace CaptureTest
             }
         }
 
+        private void mnuEnableKinect_Click(object sender, System.EventArgs e)
+        {
+            try
+            {
+                MenuItem m = sender as MenuItem;
+                if (mnuEnableKinect.Checked == true)
+                {
+                    mnuEnableKinect.Checked = false;
+                    
+                    // End Kinect Thread
+                    this.EndKinect();
+                    // Enable recording
+                    this.btnStart.Enabled = true;
+                    this.btnStart.ForeColor = System.Drawing.SystemColors.ControlText;
+                    // Disable Kinect features
+                    this.btnGetRefCoords.Enabled = false;
+                    this.btnGetRefCoords.ForeColor = System.Drawing.SystemColors.GrayText;
+                    this.btnStartCapture.Enabled = false;
+                    this.btnStartCapture.ForeColor = System.Drawing.SystemColors.GrayText;
+                    this.trackingStatus.Text = "NOT TRACKING";
+                    this.trackingStatus.BackColor = System.Drawing.Color.Gray;
+                    this.pitchStatus.BackColor = System.Drawing.Color.Gray;
+                    this.yawStatus.BackColor = System.Drawing.Color.Gray;
+                    this.rollStatus.BackColor = System.Drawing.Color.Gray;
+                    this.xStatus.BackColor = System.Drawing.Color.Gray;
+                    this.yStatus.BackColor = System.Drawing.Color.Gray;
+                    this.zStatus.BackColor = System.Drawing.Color.Gray;
+                    this.captureStatus.BackColor = System.Drawing.Color.Gray;
+                    this.captureStatus.Text = "NOT CAPTURING";
+                    GC.ReRegisterForFinalize(kinectThread);
+                    //this.kinect = ThreadStart kinect;
+                    //this.kinectThread = Thread kinectThread;
+                    //this.kinectThread.
+                }
+                else if (mnuEnableKinect.Checked == false)
+                {
+                    mnuEnableKinect.Checked = true;
+                    
+                    // Start Kinect Thread
+                    this.InitializeKinect();
+                    // Enable recording
+                    this.btnStart.Enabled = false;
+                    this.btnStart.ForeColor = System.Drawing.SystemColors.GrayText;
+                    // Disable Kinect features
+                    //this.btnGetRefCoords.Enabled = false;
+                    //this.btnGetRefCoords.ForeColor = System.Drawing.SystemColors.GrayText;
+                    this.btnStartCapture.Enabled = true;
+                    this.btnStartCapture.ForeColor = System.Drawing.SystemColors.ControlText;
+                    this.trackingStatus.Text = "NOT TRACKING";
+                    this.trackingStatus.BackColor = System.Drawing.Color.Red;
+                    this.pitchStatus.BackColor = System.Drawing.Color.Red;
+                    this.yawStatus.BackColor = System.Drawing.Color.Red;
+                    this.rollStatus.BackColor = System.Drawing.Color.Red;
+                    this.xStatus.BackColor = System.Drawing.Color.Red;
+                    this.yStatus.BackColor = System.Drawing.Color.Red;
+                    this.zStatus.BackColor = System.Drawing.Color.Red;
+                    this.captureStatus.BackColor = System.Drawing.Color.Red;
+                    this.captureStatus.Text = "NOT CAPTURING";
+                }
+
+                updateMenu();
+            }
+            catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show("Unable to start or stop Kinect process.\n\n" + ex.Message + "\n\n" + ex.ToString());
+            }
+        }
+
         private void mnuVideoCaps_Click(object sender, System.EventArgs e)
         {
             try
@@ -1739,6 +2061,122 @@ namespace CaptureTest
         private void label3_Click(object sender, EventArgs e)
         {
 
-        }        
+        }   
+     
+        // MIC SOUND LEVEL METER
+
+        private DirectX.Capture.Capture.AudioFrame audioHandler = new DirectX.Capture.Capture.AudioFrame(AudioCapture);
+
+        const int MAXSAMPLES = 250; // Number of samples to be checked
+        static int volumePeakR = 0;
+        static int volumePeakL = 0;
+        static int volumeAvgR = 0;
+        static int volumeAvgL = 0;
+        static bool volumeInfoBusy = false;
+
+        /// <summary>
+        /// Analyse audio information in the buffer.
+        /// The code works for 16 bit, stereo audio.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="BufferLen"></param>
+        private static void AudioCapture(short[] e, int BufferLen)
+        {
+            Console.WriteLine("INSIDE AUDIO CAPTURE");
+            if ((BufferLen <= 0) || (volumeInfoBusy))
+            {
+                return;
+            }
+            Console.WriteLine("VOL INFO BUSY TO TRUE");
+            volumeInfoBusy = true;
+
+            int leftS = 0;
+            int rightS = 0;
+            int avgR = 0;
+            int avgL = 0;
+            int peakR = 0;
+            int peakL = 0;
+            int size = e.GetLength(0) / 2; // Assume this is 2 channel audio
+            if (size > (BufferLen / 2))
+            {
+                size = BufferLen / 2;
+            }
+
+            if (size > MAXSAMPLES)
+            {
+                size = MAXSAMPLES;
+            }
+
+            if (size < 2)
+            {
+                volumeInfoBusy = false;
+                return;
+            }
+
+            // Check array contents
+            for (int i = 0; i < size; i += 2)
+            {
+                leftS = Math.Abs(e[i]);
+                avgL += leftS;
+                if (leftS > peakL)
+                {
+                    peakL = leftS;
+                }
+                rightS = Math.Abs(e[i + 1]);
+                avgR += rightS;
+                if (rightS > peakR)
+                {
+                    peakR = rightS;
+                }
+            } // for
+
+            volumeAvgR = avgR / size;
+            volumeAvgL = avgL / size;
+            volumePeakR = peakR;
+            volumePeakL = peakL;
+        }
+
+        bool timer1running = false;
+
+        const int DbMultiplier = 6;
+        const int DbOffset = 12;
+
+        private void timer1_Tick(object sender, System.EventArgs e)
+        {
+            Console.WriteLine("HERE");
+            if (this.timer1running)
+            {
+                if (this.capture == null)
+                {
+                    Console.WriteLine("NULLY NYULl");
+                    return;
+                }
+                
+                Console.WriteLine("IN HERE");
+                int avgR, avgL, peakR, peakL;
+                if (volumeInfoBusy)
+                {
+                    avgR = (int)((Math.Log10(volumeAvgR) *
+                                DbMultiplier) - DbOffset);
+                    avgL = (int)((Math.Log10(volumeAvgL) *
+                                DbMultiplier) - DbOffset);
+                    peakR = (int)((Math.Log10(volumePeakR) *
+                                DbMultiplier) - DbOffset);
+                    peakL = (int)((Math.Log10(volumePeakL) *
+                                DbMultiplier) - DbOffset);
+#if DEBUG
+                    Debug.WriteLine("L=" + avgL.ToString() + " " +
+                        peakL.ToString() + " R=" + avgR.ToString() +
+                        " " + peakR.ToString());
+#endif
+                    Console.WriteLine("IN VOL INFO BUSY");
+                    this.vuMeterLed1.Peak = peakL;
+                    this.vuMeterLed1.Volume = avgL;
+                    this.vuMeterLed2.Peak = peakR;
+                    this.vuMeterLed2.Volume = avgR;
+                    volumeInfoBusy = false;
+                }
+            }
+        }
     }
 }
