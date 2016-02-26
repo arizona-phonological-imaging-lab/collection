@@ -693,6 +693,8 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
 
         }
 
+        // Tells thread to turn off
+        private bool turnOff = false;
 
         /// <summary>
         /// Sends the new deformed mesh to be drawn
@@ -704,21 +706,15 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             if (!this.CheckMenuChecked(this.mnuEnableKinect))
             {
                 Console.WriteLine("SHOULD BE CLOSING");
-                //this.sensor.Close();
-                //try
-                //{
-                bool a = System.Threading.Thread.CurrentThread.Join(TimeSpan.FromMinutes(2));
-                Console.WriteLine("Thread has exited. That statement is " + a.ToString());
-                    //System.Threading.Thread.CurrentThread.Abort();
-                //}
-                //catch (System.Threading.ThreadAbortException e) 
-                //{ 
-                //}
-                //finally //(System.Threading.ThreadAbortException ex) 
-                //{ 
-                //}
-                
+                turnOff = true;          
             }
+
+            if (turnOff)
+            {
+                bool a = System.Threading.Thread.CurrentThread.Join(System.Threading.Timeout.Infinite);
+                Console.WriteLine("Thread has exited. That statement is " + a.ToString());
+            }
+
             for (int i = 0; i < vertices.Count; i++)
             {
                 var vert = vertices[i];

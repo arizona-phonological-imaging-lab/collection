@@ -127,8 +127,8 @@ namespace CaptureTest
         private MenuItem mnuEnableKinect;
         //private string refTime;
         //Process myProc;
-        ThreadStart kinect;
-        Thread kinectThread;
+        //ThreadStart kinect;
+        //Thread kinectThread;
 
         public CaptureTest()
         {
@@ -473,9 +473,9 @@ namespace CaptureTest
             // 
             // menuSampleGrabber1
             // 
-            //this.menuSampleGrabber1.Index = 4;
-            //this.menuSampleGrabber1.Text = "Sample Grabber";
-            //this.menuSampleGrabber1.Click += new System.EventHandler(this.menuSampleGrabber1_Click);
+            this.menuSampleGrabber1.Index = 4;
+            this.menuSampleGrabber1.Text = "Sample Grabber";
+            this.menuSampleGrabber1.Click += new System.EventHandler(this.menuSampleGrabber1_Click);
             // 
             // menuItem5
             // 
@@ -838,7 +838,10 @@ namespace CaptureTest
             //System.Threading.Thread kinectThread = new System.Threading.Thread(kinect.InitializeComponent());
             try
             {
-                ThreadStart kinect = new ThreadStart(() => kinect_init.Entrance(trackingStatus, pitchStatus, yawStatus, rollStatus,
+                ThreadStart kinect = null;
+                Thread kinectThread = null;
+
+                kinect = new ThreadStart(() => kinect_init.Entrance(trackingStatus, pitchStatus, yawStatus, rollStatus,
                                                                                 xStatus, yStatus, zStatus, captureStatus,
                                                                                 btnGetRefCoords, btnStartCapture, btnStart, btnStop,
                                                                                 txt_recordingID, mnuEnableKinect, this));
@@ -954,62 +957,62 @@ namespace CaptureTest
             }
         }
 
-        //private bool audioSampling = false;
-        //private bool AudioSampling
-        //{
-        //    get { return this.audioSampling; }
-        //    set
-        //    {
-        //        this.audioSampling = value;
-        //        if (value)
-        //        {
-        //            this.timer1.Start();
-        //            this.timer1running = true;
-        //            this.capture.EnableEvent(audioHandler);
-        //            this.button1.Text = "Stop VuMeter";
-        //        }
-        //        else
-        //        {
-        //            this.capture.DisableEvent(audioHandler);
-        //            this.timer1running = false;
-        //            this.timer1.Stop();
-        //            this.button1.Text = "Start VuMeter";
-        //        }
-        //    }
-        //}
+        private bool audioSampling = false;
+        private bool AudioSampling
+        {
+            get { return this.audioSampling; }
+            set
+            {
+                this.audioSampling = value;
+                if (value)
+                {
+                    this.timer1.Start();
+                    this.timer1running = true;
+                    this.capture.EnableEvent(audioHandler);
+                    this.button1.Text = "Stop VuMeter";
+                }
+                else
+                {
+                    this.capture.DisableEvent(audioHandler);
+                    this.timer1running = false;
+                    this.timer1.Stop();
+                    this.button1.Text = "Start VuMeter";
+                }
+            }
+        }
 
-        //private void button1_Click(object sender, System.EventArgs e)
-        //{
-        //    this.capture.AllowSampleGrabber = !this.capture.AllowSampleGrabber;
-        //    if (this.capture.AllowSampleGrabber)
-        //    {
-        //        this.AudioSampling = !this.AudioSampling;
-        //    }
-        //    else
-        //    {
-        //        this.AudioSampling = false;
-        //        this.SampleGrabber = false;
-        //    }
-        //}
+        private void button1_Click(object sender, System.EventArgs e)
+        {
+            this.capture.AllowSampleGrabber = !this.capture.AllowSampleGrabber;
+            if (this.capture.AllowSampleGrabber)
+            {
+                this.AudioSampling = !this.AudioSampling;
+            }
+            else
+            {
+                this.AudioSampling = false;
+                this.SampleGrabber = false;
+            }
+        }
 
-        //private void menuSampleGrabber1_Click(object sender, System.EventArgs e)
-        //{
-        //    if (this.SampleGrabber)
-        //    {
-        //        this.SampleGrabber = false;
-        //    }
-        //    else
-        //    {
-        //        this.SampleGrabber = true;
-        //    }
-        //}
+        private void menuSampleGrabber1_Click(object sender, System.EventArgs e)
+        {
+            if (this.SampleGrabber)
+            {
+                this.SampleGrabber = false;
+            }
+            else
+            {
+                this.SampleGrabber = true;
+            }
+        }
 
-        //private void menuAllowSampleGrabber1_Click(object sender, System.EventArgs e)
-        //{
-        //    // Set flag, if set, then after reselection of audio or video device,
-        //    // the SampleGrabber shows up in or disappears from the menu.
-        //    this.menuAllowSampleGrabber1.Checked = !this.menuAllowSampleGrabber1.Checked;
-        //}
+        private void menuAllowSampleGrabber1_Click(object sender, System.EventArgs e)
+        {
+            // Set flag, if set, then after reselection of audio or video device,
+            // the SampleGrabber shows up in or disappears from the menu.
+            this.menuAllowSampleGrabber1.Checked = !this.menuAllowSampleGrabber1.Checked;
+        }
         //
         // END MIC SOUND LEVEL METER
         //
@@ -1091,7 +1094,8 @@ namespace CaptureTest
                     throw new ApplicationException("Please select a video and/or audio device.");
                 if (!capture.Cued)
                     capture.Filename = new_path + @"\" + txtFilename.Text;
-               
+
+                mnuEnableKinect.Enabled = false;
                 btnStop.Enabled = true;
                 date1 = DateTime.Now;
                 startEndtimes += "Before start command: " + date1.ToString("yyyyyyyyMMddHHmmssfff") + "\r\n";
@@ -1133,7 +1137,11 @@ namespace CaptureTest
                     startEndtimes += "Stop time:            " + date1.ToString("yyyyyyyyMMddHHmmssfff") + "\r\n";
                     btnStop.Enabled = false;
                     System.IO.File.WriteAllText((new_path + @"\" + "vidTimes.txt"), startEndtimes);
-                    kinect_init.WriteCoords();
+                    if (mnuEnableKinect.Checked)
+                    {
+                        kinect_init.WriteCoords();
+                    }
+                    
                     // moves the coords.txt from desktop to subjectID folder
                     //string coords_file = "coords.txt";
                     //string ref_coords_file = "ref_coords.txt";
@@ -1766,7 +1774,7 @@ namespace CaptureTest
                 if (mnuEnableKinect.Checked == true)
                 {
                     mnuEnableKinect.Checked = false;
-                    
+                    mnuEnableKinect.Enabled = false;
                     // End Kinect Thread
                     this.EndKinect();
                     // Enable recording
@@ -1777,6 +1785,10 @@ namespace CaptureTest
                     this.btnGetRefCoords.ForeColor = System.Drawing.SystemColors.GrayText;
                     this.btnStartCapture.Enabled = false;
                     this.btnStartCapture.ForeColor = System.Drawing.SystemColors.GrayText;
+                    // Sleeping for two seconds, to ensure that the Kinect thread is suspended prior
+                    // to changing the text/color of the buttons (lest they get updated by other thread
+                    // after they have turned gray).
+                    System.Threading.Thread.Sleep(2000);
                     this.trackingStatus.Text = "NOT TRACKING";
                     this.trackingStatus.BackColor = System.Drawing.Color.Gray;
                     this.pitchStatus.BackColor = System.Drawing.Color.Gray;
@@ -1787,15 +1799,12 @@ namespace CaptureTest
                     this.zStatus.BackColor = System.Drawing.Color.Gray;
                     this.captureStatus.BackColor = System.Drawing.Color.Gray;
                     this.captureStatus.Text = "NOT CAPTURING";
-                    GC.ReRegisterForFinalize(kinectThread);
-                    //this.kinect = ThreadStart kinect;
-                    //this.kinectThread = Thread kinectThread;
-                    //this.kinectThread.
+
                 }
                 else if (mnuEnableKinect.Checked == false)
                 {
                     mnuEnableKinect.Checked = true;
-                    
+                    //kinect_init._suspendEvent.Reset(
                     // Start Kinect Thread
                     this.InitializeKinect();
                     // Enable recording
