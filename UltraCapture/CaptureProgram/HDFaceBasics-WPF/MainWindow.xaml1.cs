@@ -97,6 +97,11 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
         private string statusText = "Ready To Start Capture";
 
         /// <summary>
+        /// Contains the reference coordinate information
+        /// </summary>
+        private string ref_coords;
+
+        /// <summary>
         /// Finds the current date
         /// </summary>
         private string date_today = DateTime.Now.ToString("yyyy-MM-dd");
@@ -1088,16 +1093,16 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             float y = refCoords.Item5;
             float z = refCoords.Item6;
 
-            string ref_coords = pitch.ToString() + "\t" + yaw.ToString() + "\t" + roll.ToString() + "\t" + x.ToString() + "\t" + y.ToString() + "\t" + z.ToString();
+            this.ref_coords = pitch.ToString() + "\t" + yaw.ToString() + "\t" + roll.ToString() + "\t" + x.ToString() + "\t" + y.ToString() + "\t" + z.ToString();
 
-            string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            string destinationDir = CheckText(subjID);
-            string pattern = "[\\~#%&*{}/:<>?|\"-]";
-            string replacement = "_";
-            System.Text.RegularExpressions.Regex regEx = new System.Text.RegularExpressions.Regex(pattern);
-            destinationDir = System.Text.RegularExpressions.Regex.Replace(regEx.Replace(destinationDir, replacement), @"\s+", "_");
-            destinationDir = dtopfolder + @"\" + date_today + "_" + destinationDir;
-            System.IO.File.WriteAllText(destinationDir + @"\ref_coords.txt", ref_coords);
+            //string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            //string destinationDir = CheckText(subjID);
+            //string pattern = "[\\~#%&*{}/:<>?|\"-]";
+            //string replacement = "_";
+            //System.Text.RegularExpressions.Regex regEx = new System.Text.RegularExpressions.Regex(pattern);
+            //destinationDir = System.Text.RegularExpressions.Regex.Replace(regEx.Replace(destinationDir, replacement), @"\s+", "_");
+            //destinationDir = dtopfolder + @"\" + date_today + "_" + destinationDir;
+            //System.IO.File.WriteAllText(destinationDir + @"\ref_coords.txt", ref_coords);
 
             this.ChangeTextColor(btnGetRefCoords, "gray");
             this.SetEnable(btnGetRefCoords, "disable");
@@ -1131,6 +1136,23 @@ namespace Microsoft.Samples.Kinect.HDFaceBasics
             this.ChangeTextColor(btnGetRefCoords, "black");
             this.SetEnable(btnGetRefCoords, "enable");
         }
+
+        /// <summary>
+        /// Write the reference coordinates to a file
+        /// </summary>
+        public void WriteRefCoords()
+        {
+            string dtopfolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string destinationDir = CheckText(subjID);
+            string pattern = "[\\~#%&*{}/:<>?|\"-]";
+            string replacement = "_";
+            System.Text.RegularExpressions.Regex regEx = new System.Text.RegularExpressions.Regex(pattern);
+            destinationDir = System.Text.RegularExpressions.Regex.Replace(regEx.Replace(destinationDir, replacement), @"\s+", "_");
+            destinationDir = dtopfolder + @"\" + date_today + "_" + destinationDir;
+            System.IO.File.WriteAllText(destinationDir + @"\ref_coords.txt", ref_coords);
+        }
+
+
 
         /// <summary>
         /// Write the coordinates collected to a file

@@ -1805,6 +1805,8 @@ namespace DirectX.Capture
         /// </summary>
         protected ISampleGrabber audioGrabber = null;
 
+        
+
         int ISampleGrabberCB.SampleCB(double SampleTime, IMediaSample pSample)
         {
             Trace.Write("Audio sample ...");
@@ -1828,7 +1830,7 @@ namespace DirectX.Capture
 
             if (this.savedArray == null)
             {
-                Console.WriteLine("sAVEDaRRAY RESET TO NULL");
+                Console.WriteLine("sAVED aRRAY RESET TO NULL");
                 this.savedArray = new short[50000];
             }
             //this.InitAudioGrabbing();
@@ -1877,7 +1879,7 @@ namespace DirectX.Capture
             this.FrameEvent(this.savedArray, BufferLen / 2);
             return 0;
         }
-        
+       
         private bool InitAudioGrabber()
         {
             if (!this.AudioAvailable)

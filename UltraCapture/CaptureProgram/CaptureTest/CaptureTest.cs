@@ -743,7 +743,7 @@ namespace CaptureTest
             this.button1.Size = new System.Drawing.Size(88, 24);
             this.button1.TabIndex = 14;
             this.button1.Text = "Start VuMeter";
-            //this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // timer1
             // 
@@ -983,6 +983,7 @@ namespace CaptureTest
 
         private void button1_Click(object sender, System.EventArgs e)
         {
+            Console.WriteLine("Clicked");
             this.capture.AllowSampleGrabber = !this.capture.AllowSampleGrabber;
             if (this.capture.AllowSampleGrabber)
             {
@@ -1087,6 +1088,8 @@ namespace CaptureTest
 
                 // specify video filename
                 video_name = new_path + @"\" + "video.avi";
+
+                kinect_init.WriteRefCoords();
 
                 // end 2013-02-19
 
