@@ -1088,9 +1088,11 @@ namespace CaptureTest
 
                 // specify video filename
                 video_name = new_path + @"\" + "video.avi";
-
-                kinect_init.WriteRefCoords();
-
+                if (mnuEnableKinect.Checked)
+                {
+                    kinect_init.WriteRefCoords();
+                }
+                
                 // end 2013-02-19
 
                 if (capture == null)
