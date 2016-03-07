@@ -267,7 +267,6 @@ FakesAssemblies/
 
 # Other C# stuff
 obj
-bin
 deploy
 deploy/*
 _ReSharper.*
